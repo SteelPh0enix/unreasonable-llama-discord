@@ -34,7 +34,7 @@ async def on_message(message):
         return
 
     if message.content.startswith(BOT_PREFIX):
-        prompt = message.content.removeprefix(BOT_PREFIX)
+        prompt = message.content.removeprefix(BOT_PREFIX).strip()
         print(f"Requesting completion for prompt: {prompt}")
         llm_response = llama.get_completion(
             LlamaCompletionRequest(prompt=prompt, system_prompt=SYSTEM_PROMPT)
