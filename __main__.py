@@ -5,7 +5,6 @@ import discord
 from unreasonable_llama import (
     UnreasonableLlama,
     LlamaCompletionRequest,
-    LlamaSystemPrompt,
 )
 
 llama = UnreasonableLlama()
@@ -16,11 +15,7 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 BOT_PREFIX = "$llm"
-SYSTEM_PROMPT = LlamaSystemPrompt(
-    prompt="You are a Discord bot. You are supposed to help the user with whatever he needs, or just talk to him if he wants.",
-    anti_prompt="",
-    assistant_name="SteelLlama",
-)
+SYSTEM_PROMPT = "You are a helpful Discord bot. Answer the following question as precisely as you can.\n"
 
 
 @client.event
@@ -43,7 +38,11 @@ async def on_message(message):
         print(f"Got LLM response: {llm_response}")
         try:
             if len(llm_response.content) > 0:
-                await message.channel.send(llm_response.content)
+                if len(llm_response.content) < 2000:
+                    await message.channel.send(llm_response.content)
+                else:
+                    for i in range(0, len(llm_response.content), 2000):
+                        await message.channel.send(llm_response.content[i : i + 2000])
             else:
                 await message.channel.send(
                     f"Oops, something went wrong. This is the response i've got: {llm_response}"
