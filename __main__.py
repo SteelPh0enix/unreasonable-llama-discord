@@ -45,11 +45,11 @@ async def on_message(message):
                         await message.channel.send(llm_response.content[i : i + 2000])
             else:
                 await message.channel.send(
-                    f"Oops, something went wrong. This is the response i've got: {llm_response}"
+                    f"Oops, something went wrong. This is the response i've got: `{llm_response}`"
                 )
         except Exception as e:
             await message.channel.send(
-                f"Oops, something went **TERRIBLY** wrong! I've got an exception: {e}"
+                f"Oops, something went **TERRIBLY** wrong! I've got an exception: `{e}`"
             )
 
 
