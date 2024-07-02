@@ -1,21 +1,48 @@
+import argparse
 import os
+from dataclasses import dataclass
 
 import discord
 
 from unreasonable_llama import (
-    UnreasonableLlama,
     LlamaCompletionRequest,
+    UnreasonableLlama,
 )
 
 llama = UnreasonableLlama()
-
 intents = discord.Intents.default()
 intents.message_content = True
-
 client = discord.Client(intents=intents)
 
 BOT_PREFIX = "$llm"
-SYSTEM_PROMPT = "You are a helpful Discord bot. Answer the following question as precisely as you can.\n"
+SYSTEM_PROMPT = "You are a helpful Discord bot. Answer the following question as precisely as you can."
+
+
+@dataclass
+class ChatTemplate:
+    template: str
+    has_system_prompt: bool
+
+
+CHAT_TEMPLATES = {
+    "gemma": ChatTemplate(
+        "<bos><start_of_turn>user\n{prompt}<end_of_turn>\n<start_of_turn>model\n", False
+    ),
+    "chatml": ChatTemplate(
+        "<|im_start|>system\n{system}<|im_end|>\n<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n",
+        True,
+    ),
+}
+
+CURRENT_CHAT_TEMPLATE: ChatTemplate | None = None
+
+
+def format_prompt_for_chat(
+    template: ChatTemplate, prompt: str, system_prompt: str | None = None
+) -> str:
+    if template.has_system_prompt and system_prompt is not None:
+        return template.template.format(system=system_prompt, prompt=prompt)
+    return template.template.format(prompt=prompt)
 
 
 @client.event
@@ -28,12 +55,15 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if CURRENT_CHAT_TEMPLATE is None:
+        raise RuntimeError("Missing chat template!")
+
     if message.content.startswith(BOT_PREFIX):
         prompt = message.content.removeprefix(BOT_PREFIX).strip()
         print(f"Requesting completion for prompt: {prompt}")
-        llm_response = llama.get_completion(
-            LlamaCompletionRequest(prompt=prompt, system_prompt=SYSTEM_PROMPT)
-        )
+        prompt = format_prompt_for_chat(CURRENT_CHAT_TEMPLATE, prompt, SYSTEM_PROMPT)
+        print(f"Formatted prompt: {prompt}")
+        llm_response = llama.get_completion(LlamaCompletionRequest(prompt=prompt))
 
         print(f"Got LLM response: {llm_response}")
         try:
@@ -53,4 +83,24 @@ async def on_message(message):
             )
 
 
-client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
+def main():
+    global CURRENT_CHAT_TEMPLATE
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "template_name",
+        type=str,
+        choices=list(CHAT_TEMPLATES.keys()),
+        help="Name of the chat template to use. Valid values: "
+        + ", ".join(CHAT_TEMPLATES.keys()),
+    )
+
+    args = parser.parse_args()
+    print(f"Using chat template for {args.template_name}")
+    CURRENT_CHAT_TEMPLATE = CHAT_TEMPLATES[args.template_name]
+
+    client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
+
+
+if __name__ == "__main__":
+    main()
