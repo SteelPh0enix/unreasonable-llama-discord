@@ -15,7 +15,7 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 BOT_PREFIX = "$llm"
-SYSTEM_PROMPT = "You are a helpful Discord bot. Answer the following question as precisely as you can."
+SYSTEM_PROMPT = "You are a helpful Discord bot. Answer the following question as precisely as you can, or just chat with the user."
 
 
 @dataclass
