@@ -92,6 +92,11 @@ def main():
     @client.event
     async def on_ready():
         print(f"We have logged in as {client.user}")
+        llama_health = llama.get_health(include_slots=True)
+        llm_slot = llama_health.slots[0]
+        await client.change_presence(
+            activity=discord.CustomActivity(f"Currently using {llm_slot['model']}")
+        )
 
     @client.event
     async def on_message(message):
