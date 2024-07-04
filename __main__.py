@@ -90,7 +90,11 @@ async def generate_streamed_llm_response(
 
 
 def split_message(message: str, threshold: int) -> tuple[str, str | None]:
-    if len(message) < (threshold + 1):  # this +1 is "for safety" hack, TODO kill
+    threshold = threshold - 5  # safety threshold for adding end markers and stuff
+    if threshold < 0:
+        raise RuntimeError("Threshold cannot be lower than 5!")
+
+    if len(message) < threshold:
         return message, None
 
     # split the message so first one has up to `threshold` characters,
@@ -102,6 +106,22 @@ def split_message(message: str, threshold: int) -> tuple[str, str | None]:
     last_newline = first_message.rfind("\n")
     second_message = first_message[last_newline + 1 :] + second_message
     first_message = first_message[:last_newline]
+
+    # check for unclosed code blocks
+    # if the number of markers is odd, there's most likely an unclosed code
+    # block there
+    starting_marker = "```"
+    ending_marker = "```"
+    if first_message.count("```") % 2 != 0:
+        # find last ``` and check if it has a language marker
+        last_marker = first_message.rfind("```")
+        last_marker_ending = first_message.find("\n", last_marker)
+        last_marker_slice = first_message[last_marker:last_marker_ending]
+        if len(last_marker_slice) > 3:
+            starting_marker = starting_marker + last_marker_slice[3:]
+
+        first_message = first_message + "\n" + ending_marker
+        second_message = starting_marker + "\n" + second_message
 
     return first_message, second_message
 
