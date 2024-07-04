@@ -23,7 +23,7 @@ class ChatTemplate:
 
 CHAT_TEMPLATES = {
     "gemma": ChatTemplate(
-        """<bos><start_of_turn>user
+        """<start_of_turn>user
 {system}<end_of_turn>
 <start_of_turn>model
 Understood.<end_of_turn>
@@ -49,6 +49,11 @@ Understood.<|end|>
 {prompt}<|end|>
 <|assistant|>
 """),
+    "yi": ChatTemplate("""{system}<|im_start|>user
+{prompt}<|im_end|>
+<|im_start|>assistant
+"""),
+    "mistral": ChatTemplate("""[INST]{system}[/INST]Ok!</s><s>[INST]{prompt}[/INST]"""),
 }
 
 
