@@ -51,11 +51,14 @@ Understood.<|end|>
 {prompt}<|end|>
 <|assistant|>
 """),
-    "yi": ChatTemplate("""{system}<|im_start|>user
-{prompt}<|im_end|>
-<|im_start|>assistant
-"""),
     "mistral": ChatTemplate("""[INST]{system}[/INST]Ok!</s><s>[INST]{prompt}[/INST]"""),
+    "llama": ChatTemplate("""<|start_header_id|>system<|end_header_id|>
+
+{system}<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+"""),
 }
 
 
