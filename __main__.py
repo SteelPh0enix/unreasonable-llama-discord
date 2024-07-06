@@ -158,7 +158,7 @@ def main():
         llama_health = llama.get_health(include_slots=True)
         llm_slot = llama_health.slots[0]
         await client.change_presence(
-            activity=discord.CustomActivity(f"Currently using {llm_slot['model']}")
+            activity=discord.CustomActivity(f"Currently using {llm_slot.model}")
         )
 
     @client.event
