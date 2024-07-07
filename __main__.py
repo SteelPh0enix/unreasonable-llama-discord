@@ -20,7 +20,9 @@ SYSTEM_PROMPT = "You are extraordinary AI assistant that's tasked with helping i
 @dataclass
 class ChatTemplate:
     template: str
-    end_token: str = ""
+
+    def format_prompt(self, prompt: str, system_prompt: str | None = None) -> str:
+        return self.template.format(system=system_prompt, prompt=prompt)
 
 
 CHAT_TEMPLATES = {
@@ -40,8 +42,7 @@ Understood.<end_of_turn>
 <|im_start|>user
 {prompt}<|im_end|>
 <|im_start|>assistant
-""",
-        "<|im_end|>",
+"""
     ),
     "phi3": ChatTemplate("""<|user|>
 {system}<|end|>
@@ -62,16 +63,10 @@ Understood.<|end|>
 }
 
 
-def format_prompt_for_chat(
-    template: ChatTemplate, prompt: str, system_prompt: str | None = None
-) -> str:
-    return template.template.format(system=system_prompt, prompt=prompt)
-
-
 async def generate_streamed_llm_response(
     llama: UnreasonableLlama, prompt: str, chat_template: ChatTemplate
 ) -> LlamaCompletionRequest:
-    formatted_prompt = format_prompt_for_chat(chat_template, prompt, SYSTEM_PROMPT)
+    formatted_prompt = chat_template.format_prompt(prompt, SYSTEM_PROMPT)
     logging.debug(f"Formatted prompt: {formatted_prompt}")
     request = LlamaCompletionRequest(prompt=formatted_prompt)
     logging.debug(f"Performing completion request: {request}")
