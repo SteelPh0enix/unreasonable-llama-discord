@@ -68,18 +68,6 @@ def format_prompt_for_chat(
     return template.template.format(system=system_prompt, prompt=prompt)
 
 
-def generate_llm_response(
-    llama: UnreasonableLlama, prompt: str, chat_template: ChatTemplate
-) -> str:
-    formatted_prompt = format_prompt_for_chat(chat_template, prompt, SYSTEM_PROMPT)
-    logging.debug(f"Formatted prompt: {formatted_prompt}")
-    request = LlamaCompletionRequest(prompt=formatted_prompt)
-    logging.debug(f"Performing completion request: {request}")
-    response = llama.get_completion(request)
-    logging.debug(f"Got response from LLM: {response}")
-    return response.content
-
-
 async def generate_streamed_llm_response(
     llama: UnreasonableLlama, prompt: str, chat_template: ChatTemplate
 ) -> LlamaCompletionRequest:
@@ -115,9 +103,9 @@ def split_message(message: str, threshold: int) -> tuple[str, str | None]:
     # block there
     starting_marker = "```"
     ending_marker = "```"
-    if first_message.count("```") % 2 != 0:
+    if first_message.count(ending_marker) % 2 != 0:
         # find last ``` and check if it has a language marker
-        last_marker = first_message.rfind("```")
+        last_marker = first_message.rfind(ending_marker)
         last_marker_ending = first_message.find("\n", last_marker)
         last_marker_slice = first_message[last_marker:last_marker_ending]
         if len(last_marker_slice) > 3:
