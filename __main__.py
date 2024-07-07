@@ -116,28 +116,12 @@ def current_time_ms() -> int:
     return round(time.time() * 1000)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "template_name",
-        type=str,
-        choices=list(CHAT_TEMPLATES.keys()),
-        help="Name of the chat template to use. Valid values: "
-        + ", ".join(CHAT_TEMPLATES.keys()),
-    )
-
-    args = parser.parse_args()
-    logging.info(f"Using chat template for {args.template_name}")
-    chat_template = CHAT_TEMPLATES[args.template_name]
-
-    llama = UnreasonableLlama()
-    intents = discord.Intents.default()
-    intents.message_content = True
-    client = discord.Client(intents=intents)
-
+def setup_client(
+    client: discord.Client, llama: UnreasonableLlama, chat_template: ChatTemplate
+):
     @client.event
     async def on_ready():
-        print(f"We have logged in as {client.user}")
+        print(f"Logged in as {client.user}")
         llama_health = llama.get_health(include_slots=True)
         llm_slot = llama_health.slots[0]
         await client.change_presence(
@@ -198,6 +182,28 @@ def main():
                                 f"Updated message, current time: {time_since_last_update}"
                             )
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "template_name",
+        type=str,
+        choices=list(CHAT_TEMPLATES.keys()),
+        help="Name of the chat template to use. Valid values: "
+        + ", ".join(CHAT_TEMPLATES.keys()),
+    )
+
+    args = parser.parse_args()
+    logging.info(f"Using chat template for {args.template_name}")
+    chat_template = CHAT_TEMPLATES[args.template_name]
+
+    llama = UnreasonableLlama()
+
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    client = discord.Client(intents=intents)
+    setup_client(client, llama, chat_template)
     client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
 
 
