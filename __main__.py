@@ -12,7 +12,7 @@ from unreasonable_llama import (
 )
 
 MESSAGE_EDIT_COOLDOWN_MS = 750
-MESSAGE_LENGTH_LIMIT = 2000
+MESSAGE_LENGTH_LIMIT = 1990
 BOT_PREFIX = "$llm"
 SYSTEM_PROMPT = "You are a helpful AI assistant. Respond in english language only."
 
@@ -117,6 +117,56 @@ def current_time_ms() -> int:
     return round(time.time() * 1000)
 
 
+async def request_and_process_llm_response(
+    message: discord.Message,
+    llama: UnreasonableLlama,
+    prompt: str,
+    chat_template: ChatTemplate,
+):
+    response_message = None
+    buffered_chunks = ""
+    time_since_last_update = None
+
+    async for chunk in generate_streamed_llm_response(llama, prompt, chat_template):
+        buffered_chunks += chunk.content
+
+        if response_message is None:
+            response_message = await message.channel.send(buffered_chunks)
+            time_since_last_update = current_time_ms()
+            logging.debug(
+                f"Created response message, current time: {time_since_last_update}"
+            )
+            buffered_chunks = ""
+        else:
+            current_time = current_time_ms()
+            logging.debug(
+                f"checking cooldown, current time: {current_time}, last time: {time_since_last_update}, diff = {current_time - time_since_last_update}"
+            )
+            if (
+                current_time - time_since_last_update
+            ) >= MESSAGE_EDIT_COOLDOWN_MS or chunk.stop:
+                new_content = response_message.content + buffered_chunks
+                buffered_chunks = ""
+
+                new_content_first, new_content_second = split_message(
+                    new_content,
+                    MESSAGE_LENGTH_LIMIT,
+                )
+
+                response_message = await response_message.edit(
+                    content=new_content_first
+                )
+                if new_content_second is not None:
+                    response_message = await response_message.channel.send(
+                        new_content_second
+                    )
+
+                time_since_last_update = current_time_ms()
+                logging.debug(
+                    f"Updated message, current time: {time_since_last_update}"
+                )
+
+
 def setup_client(
     client: discord.Client, llama: UnreasonableLlama, chat_template: ChatTemplate
 ):
@@ -130,58 +180,17 @@ def setup_client(
         )
 
     @client.event
-    async def on_message(message):
+    async def on_message(message: discord.Message):
         if message.author == client.user:
             return
 
         if message.content.startswith(BOT_PREFIX):
-            response_message = None
-            buffered_chunks = ""
-            time_since_last_update = None
             prompt = message.content.removeprefix(BOT_PREFIX).strip()
             logging.info(f"Requesting completion for prompt: {prompt}")
-
             async with message.channel.typing():
-                async for chunk in generate_streamed_llm_response(
-                    llama, prompt, chat_template
-                ):
-                    buffered_chunks += chunk.content
-
-                    if response_message is None:
-                        response_message = await message.channel.send(buffered_chunks)
-                        time_since_last_update = current_time_ms()
-                        logging.debug(
-                            f"Created response message, current time: {time_since_last_update}"
-                        )
-                        buffered_chunks = ""
-                    else:
-                        current_time = current_time_ms()
-                        logging.debug(
-                            f"checking cooldown, current time: {current_time}, last time: {time_since_last_update}, diff = {current_time - time_since_last_update}"
-                        )
-                        if (
-                            current_time - time_since_last_update
-                        ) >= MESSAGE_EDIT_COOLDOWN_MS or chunk.stop:
-                            new_content = response_message.content + buffered_chunks
-                            buffered_chunks = ""
-
-                            new_content_first, new_content_second = split_message(
-                                new_content,
-                                MESSAGE_LENGTH_LIMIT,
-                            )
-
-                            response_message = await response_message.edit(
-                                content=new_content_first
-                            )
-                            if new_content_second is not None:
-                                response_message = await response_message.channel.send(
-                                    new_content_second
-                                )
-
-                            time_since_last_update = current_time_ms()
-                            logging.debug(
-                                f"Updated message, current time: {time_since_last_update}"
-                            )
+                await request_and_process_llm_response(
+                    message, llama, prompt, chat_template
+                )
 
 
 def main():
