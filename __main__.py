@@ -22,6 +22,34 @@ def current_time_ms() -> int:
     return round(time.time() * 1000)
 
 
+type LLMConversation = list[dict[str, str]]
+
+
+class LLMConversationHistory:
+    def __init__(
+        self,
+        system_prompt: str,
+        user_role_name: str = "user",
+        system_role_name: str = "system",
+    ):
+        self.system_prompt = system_prompt
+        self.user_role_name = user_role_name
+        self.system_role_name = system_role_name
+        self.conversation_history = self._generate_init_prompt()
+
+    def _generate_init_prompt(self) -> LLMConversation:
+        return [{"role": self.system_role_name, "content": self.system_prompt}]
+
+    def add_user_prompt(self, prompt: str) -> LLMConversation:
+        self.conversation_history.append(
+            {"role": self.user_role_name, "content": prompt}
+        )
+        return self.conversation_history
+
+
+type LLMUserConversation = dict[str, LLMConversation]
+
+
 async def generate_streamed_llm_response(
     llama: UnreasonableLlama, prompt: str, system_prompt: str, tokenizer: AutoTokenizer
 ) -> LlamaCompletionRequest:
