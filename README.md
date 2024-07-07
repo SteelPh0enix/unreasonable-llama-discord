@@ -45,9 +45,13 @@ cd unreasonable-llama-discord
 poetry install # must be done once to create virtualenv and set up dependencies for the bot
 export LLAMA_CPP_SERVER_URL="http://llama-ip:llama-port/"
 export UNREASONABLE_LLAMA_DISCORD_API_KEY="MyAPIKey"
-poetry run python . [template name]
+poetry run python . [path/link to original huggingface model repository]
 ```
 
-where `[template name]` is the name of chat template to be used by the bot.
+where `[path/link to original huggingface model repository]` is either
+* Short-hand (like `meta-llama/Meta-Llama-3-8B-Instruct`) or full (like `https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct`) URL to huggingface repository with original (**not quantized!**) model
+* Path to downloaded repository with model's `tokernizer_config.json` (and possibly other tokenizer-related files, model itself is NOT required)
+
+This is required for the bot to properly format the messages into the chat format.
 
 The bot should perform a single request to `/health` endpoint at the start, and if everything is configured correctly it should show loaded model's path in the activity and start responding to queries.

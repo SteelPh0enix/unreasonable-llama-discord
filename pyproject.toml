@@ -10,6 +10,8 @@ package-mode = false
 python = "^3.12"
 discord-py = "^2.4.0"
 unreasonable-llama = "0.1.1"
+transformers = "^4.42.3"
+jinja2 = "^3.1.4"
 
 
 [build-system]

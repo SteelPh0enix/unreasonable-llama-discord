@@ -1,11 +1,12 @@
+"""Main executable module of unreasonable-llama-discord bot"""
+
 import argparse
 import logging
 import os
 import time
-from dataclasses import dataclass
 
 import discord
-
+from transformers import AutoTokenizer
 from unreasonable_llama import (
     LlamaCompletionRequest,
     UnreasonableLlama,
@@ -14,62 +15,32 @@ from unreasonable_llama import (
 MESSAGE_EDIT_COOLDOWN_MS = 750
 MESSAGE_LENGTH_LIMIT = 1990
 BOT_PREFIX = "$llm"
-SYSTEM_PROMPT = "You are a helpful AI assistant. Respond in english language only."
+SYSTEM_PROMPT = "You are a helpful AI assistant. Help your users with anything they require and explain your thought process."
 
 
-@dataclass
-class ChatTemplate:
-    template: str
-
-    def format_prompt(self, prompt: str, system_prompt: str | None = None) -> str:
-        return self.template.format(system=system_prompt, prompt=prompt)
-
-
-CHAT_TEMPLATES = {
-    "gemma": ChatTemplate(
-        """<start_of_turn>user
-{system}<end_of_turn>
-<start_of_turn>model
-Understood.<end_of_turn>
-<start_of_turn>user
-{prompt}<end_of_turn>
-<start_of_turn>model
-"""
-    ),
-    "chatml": ChatTemplate(
-        """<|im_start|>system
-{system}<|im_end|>
-<|im_start|>user
-{prompt}<|im_end|>
-<|im_start|>assistant
-"""
-    ),
-    "phi3": ChatTemplate("""<|user|>
-{system}<|end|>
-<|assistant|>
-Understood.<|end|>
-<|user|>
-{prompt}<|end|>
-<|assistant|>
-"""),
-    "mistral": ChatTemplate("""[INST]{system}[/INST]Ok!</s><s>[INST]{prompt}[/INST]"""),
-    "llama": ChatTemplate("""<|start_header_id|>system<|end_header_id|>
-
-{system}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-"""),
-    "deepseek": ChatTemplate("{system}\n\nUser: {prompt}\n\nAssistant: "),
-}
+def current_time_ms() -> int:
+    return round(time.time() * 1000)
 
 
 async def generate_streamed_llm_response(
-    llama: UnreasonableLlama, prompt: str, chat_template: ChatTemplate
+    llama: UnreasonableLlama, prompt: str, system_prompt: str, tokenizer: AutoTokenizer
 ) -> LlamaCompletionRequest:
-    formatted_prompt = chat_template.format_prompt(prompt, SYSTEM_PROMPT)
-    logging.info(f"Formatted prompt: {formatted_prompt}")
-    request = LlamaCompletionRequest(prompt=formatted_prompt)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt},
+    ]
+    chat_prompt = str(
+        tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=False,
+        )
+    ).removeprefix(tokenizer.bos_token)
+    logging.info(
+        f"Requesting completion for following formatted prompt:\n{chat_prompt}"
+    )
+
+    request = LlamaCompletionRequest(prompt=chat_prompt)
     logging.debug(f"Performing completion request: {request}")
     async for chunk in llama.get_streamed_completion(request):
         logging.debug(f"Got response chunk from LLM: {chunk}")
@@ -113,21 +84,20 @@ def split_message(message: str, threshold: int) -> tuple[str, str | None]:
     return first_message, second_message
 
 
-def current_time_ms() -> int:
-    return round(time.time() * 1000)
-
-
 async def request_and_process_llm_response(
     message: discord.Message,
     llama: UnreasonableLlama,
     prompt: str,
-    chat_template: ChatTemplate,
+    system_prompt: str,
+    tokenizer: AutoTokenizer,
 ):
     response_message = None
     buffered_chunks = ""
     time_since_last_update = None
 
-    async for chunk in generate_streamed_llm_response(llama, prompt, chat_template):
+    async for chunk in generate_streamed_llm_response(
+        llama, prompt, system_prompt, tokenizer
+    ):
         buffered_chunks += chunk.content
 
         if response_message is None:
@@ -168,7 +138,7 @@ async def request_and_process_llm_response(
 
 
 def setup_client(
-    client: discord.Client, llama: UnreasonableLlama, chat_template: ChatTemplate
+    client: discord.Client, llama: UnreasonableLlama, tokenizer: AutoTokenizer
 ):
     @client.event
     async def on_ready():
@@ -189,23 +159,20 @@ def setup_client(
             logging.info(f"Requesting completion for prompt: {prompt}")
             async with message.channel.typing():
                 await request_and_process_llm_response(
-                    message, llama, prompt, chat_template
+                    message, llama, prompt, SYSTEM_PROMPT, tokenizer
                 )
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "template_name",
+        "model_path_or_url",
         type=str,
-        choices=list(CHAT_TEMPLATES.keys()),
-        help="Name of the chat template to use. Valid values: "
-        + ", ".join(CHAT_TEMPLATES.keys()),
+        help="Path or huggingface.co URL to the model for tokenizer purposes.",
     )
 
     args = parser.parse_args()
-    logging.info(f"Applied chat template: {args.template_name}")
-    chat_template = CHAT_TEMPLATES[args.template_name]
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_url)
 
     llama = UnreasonableLlama()
 
@@ -213,7 +180,7 @@ def main():
     intents.message_content = True
 
     client = discord.Client(intents=intents)
-    setup_client(client, llama, chat_template)
+    setup_client(client, llama, tokenizer)
     client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
 
 
