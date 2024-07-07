@@ -14,8 +14,21 @@ from unreasonable_llama import (
 
 MESSAGE_EDIT_COOLDOWN_MS = 750
 MESSAGE_LENGTH_LIMIT = 1990
-BOT_PREFIX = "$llm"
-SYSTEM_PROMPT = "You are a helpful AI assistant. Help your users with anything they require and explain your thought process."
+BOT_PREFIX = "$"
+BOT_LLM_INFERENCE_COMMAND = "llm"
+BOT_HELP_COMMAND = "llm-help"
+BOT_RESET_CONVERSAION_HISTORY_COMMAND = "llm-reset"
+DEFAULT_SYSTEM_PROMPT = "You are a helpful AI assistant. Help your users with anything they require and explain your thought process."
+BOT_HELP_MESSAGE = f"""This is SteelLlama, an [`unreasonable-llama-discord`](https://github.com/SteelPh0enix/unreasonable-llama-discord)-based Discord bot.
+It's main functionality is to be a bridge between Discord and locally ran LLM.
+Available commands:
+* `{BOT_PREFIX}{BOT_LLM_INFERENCE_COMMAND} [prompt]` - Give a prompt to an LLM and trigger it's response. Bot will retain (some) conversation history (depending on currently ran LLMs context length and bot's configuration).
+* `{BOT_PREFIX}{BOT_HELP_COMMAND}` - Shows this message.
+* `{BOT_PREFIX}{BOT_RESET_CONVERSAION_HISTORY_COMMAND}` - Reset your conversation history. This will create a new session with the LLM.
+
+Default system prompt: {DEFAULT_SYSTEM_PROMPT}
+
+**Note: Currently, conversation history is unavailable and WIP!**"""
 
 
 def current_time_ms() -> int:
@@ -35,7 +48,7 @@ class LLMConversationHistory:
         self.system_prompt = system_prompt
         self.user_role_name = user_role_name
         self.system_role_name = system_role_name
-        self.conversation_history = self._generate_init_prompt()
+        self.clean()
 
     def _generate_init_prompt(self) -> LLMConversation:
         return [{"role": self.system_role_name, "content": self.system_prompt}]
@@ -45,6 +58,9 @@ class LLMConversationHistory:
             {"role": self.user_role_name, "content": prompt}
         )
         return self.conversation_history
+
+    def clean(self):
+        self.conversation_history = self._generate_init_prompt()
 
 
 type LLMUserConversation = dict[str, LLMConversation]
@@ -183,12 +199,24 @@ def setup_client(
             return
 
         if message.content.startswith(BOT_PREFIX):
-            prompt = message.content.removeprefix(BOT_PREFIX).strip()
-            logging.info(f"Requesting completion for prompt: {prompt}")
-            async with message.channel.typing():
-                await request_and_process_llm_response(
-                    message, llama, prompt, SYSTEM_PROMPT, tokenizer
-                )
+            raw_message_text = message.content.removeprefix(BOT_PREFIX).strip()
+            message_split = raw_message_text.split(" ", 1)
+            if len(message_split) == 1:
+                command = message_split[0]
+                argument = None
+            else:
+                command, argument = message_split
+
+            if command == BOT_LLM_INFERENCE_COMMAND:
+                logging.info(f"Requesting completion for prompt: {argument}")
+                async with message.channel.typing():
+                    await request_and_process_llm_response(
+                        message, llama, argument, DEFAULT_SYSTEM_PROMPT, tokenizer
+                    )
+            if command == BOT_HELP_COMMAND:
+                logging.info("Help requested")
+                async with message.channel.typing():
+                    await message.channel.send(BOT_HELP_MESSAGE)
 
 
 def main():
@@ -200,6 +228,7 @@ def main():
     )
 
     args = parser.parse_args()
+
     tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_url)
 
     llama = UnreasonableLlama()
