@@ -20,8 +20,8 @@ BOT_HELP_COMMAND = "llm-help"
 BOT_RESET_CONVERSAION_HISTORY_COMMAND = "llm-reset"
 DEFAULT_SYSTEM_PROMPT = "You are a helpful AI assistant. Help your users with anything they require and explain your thought process."
 BOT_HELP_MESSAGE = f"""This is SteelLlama, an [`unreasonable-llama-discord`](https://github.com/SteelPh0enix/unreasonable-llama-discord)-based Discord bot.
-It's main functionality is to be a bridge between Discord and locally ran LLM.
-Available commands:
+It's main functionality is to be a bridge between Discord and locally ran LLM. And by "locally", i mean on admin's GPU somewhere in eastern Poland.
+# Available commands:
 * `{BOT_PREFIX}{BOT_LLM_INFERENCE_COMMAND} [prompt]` - Give a prompt to an LLM and trigger it's response. Bot will retain (some) conversation history (depending on currently ran LLMs context length and bot's configuration).
 * `{BOT_PREFIX}{BOT_HELP_COMMAND}` - Shows this message.
 * `{BOT_PREFIX}{BOT_RESET_CONVERSAION_HISTORY_COMMAND}` - Reset your conversation history. This will create a new session with the LLM.
@@ -29,6 +29,11 @@ Available commands:
 Default system prompt: {DEFAULT_SYSTEM_PROMPT}
 
 **Note: Currently, conversation history is unavailable and WIP!**"""
+
+
+def update_help_message(new_suffix: str):
+    global BOT_HELP_MESSAGE
+    BOT_HELP_MESSAGE = BOT_HELP_MESSAGE + "\n" + new_suffix
 
 
 def current_time_ms() -> int:
@@ -189,8 +194,21 @@ def setup_client(
         print(f"Logged in as {client.user}")
         llama_health = llama.get_health(include_slots=True)
         llm_slot = llama_health.slots[0]
+        update_help_message(f"""# Loaded model details
+Name: `{llm_slot.model}`
+Context length (tokens): `{llm_slot.n_ctx}`
+Seed: `{llm_slot.seed}`
+Temperature (randomness of generated text, in `(0, 1)` range): `{llm_slot.temperature}`
+Dynamic temperature range (final temperature is in range `T +/- dynT`): `{llm_slot.dynatemp_range}`
+Dynamic temperature exponent: `{llm_slot.dynatemp_exponent}`
+Top K (limits next token selection to K most probable tokens): `{llm_slot.top_k}`
+Top P (limits next token selection to a subset of tokens with cumulative probability above P): `{llm_slot.top_p}`
+Min P (minimum probability for a token to be considered, relative to prob. of most likely token): `{llm_slot.min_p}`
+Samplers: `{llm_slot.samplers}`""")
         await client.change_presence(
-            activity=discord.CustomActivity(f"Currently using {llm_slot.model}")
+            activity=discord.CustomActivity(
+                f"Try me with {BOT_PREFIX}{BOT_HELP_COMMAND}. Currently using {llm_slot.model} with {llm_slot.n_ctx} context length"
+            )
         )
 
     @client.event
