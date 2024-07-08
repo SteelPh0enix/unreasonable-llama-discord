@@ -12,16 +12,17 @@ For example:
 
 ## Features
 
-- One-shot LLM inference from discord message (conversation memory is WIP)
-- Supports Gemma, Llama, Mistral, ChatML and Phi3 chat templates (easy to add, more in progress)
-- Shows loaded model name (or rather path) in activity
+- Chat-like conversations with LLM (with persistent memory)
+- Shows informations about currently used model
+- Supports any `huggingface.co` model compatible with `transformers` library for tokenization.
 
-### WIP
+Use `$llm-help` command to see the built-in help.
 
-- Dynamic chat template parsing from `tokenizer_config.json`
-- Dynamic prompt generation using chat templates
-- Conversation history
-- Management commands for clearing history and setting custom system prompts (per user)
+### TODO/WIP
+
+- Move conversation history to *really* persistent database (sqlite)
+- Add option to set system prompt for the user
+- Add automatic conversation trimming for detected context length
 
 ## Deployment
 
