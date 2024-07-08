@@ -161,6 +161,7 @@ async def request_and_process_llm_response(
 
     async for chunk in generate_streamed_llm_response(llama, prompt):
         response_text += chunk.content
+        response_text = response_text.removesuffix(conversation.tokenizer.eos_token)
 
         if response_message is None:
             response_message = await message.reply(response_text)
