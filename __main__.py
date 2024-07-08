@@ -18,6 +18,7 @@ BOT_PREFIX = "$"
 BOT_LLM_INFERENCE_COMMAND = "llm"
 BOT_HELP_COMMAND = "llm-help"
 BOT_RESET_CONVERSATION_HISTORY_COMMAND = "llm-reset"
+BOT_STATS_COMMAND = "llm-stats"
 DEFAULT_SYSTEM_PROMPT = "You are a helpful AI assistant. Help your users with anything they require and explain your thought process."
 BOT_HELP_MESSAGE = f"""This is SteelLlama, an [`unreasonable-llama-discord`](https://github.com/SteelPh0enix/unreasonable-llama-discord)-based Discord bot.
 It's main functionality is to be a bridge between Discord and locally ran LLM. And by "locally", i mean on admin's GPU somewhere in eastern Poland.
@@ -25,6 +26,7 @@ It's main functionality is to be a bridge between Discord and locally ran LLM. A
 * `{BOT_PREFIX}{BOT_LLM_INFERENCE_COMMAND} [prompt]` - Give a prompt to an LLM and trigger it's response. Bot will retain (some) conversation history (depending on currently ran LLMs context length and bot's configuration).
 * `{BOT_PREFIX}{BOT_HELP_COMMAND}` - Shows this message.
 * `{BOT_PREFIX}{BOT_RESET_CONVERSATION_HISTORY_COMMAND}` - Reset your conversation history. This will create a new session with the LLM.
+* `{BOT_PREFIX}{BOT_STATS_COMMAND}` - Show your conversation statistics.
 
 Default system prompt: {DEFAULT_SYSTEM_PROMPT}
 
@@ -295,6 +297,19 @@ Samplers: `{llm_slot.samplers}`""")
                     f"There's no conversation history saved for {message_author}"
                 )
                 await message.reply("There's no conversation history to clear!")
+
+        elif command == BOT_STATS_COMMAND:
+            logging.info(f"Stats for user {message_author} requested!")
+            if message_author in conversations:
+                convo = conversations[message_author]
+                context_length = convo.conversation_length()
+                messages_in_convo = len(convo.conversation_history)
+                system_prompt = convo.conversation_history[0]["content"]
+                await message.reply(
+                    f"User ID: {message_author}\nMessages in conversation history: {messages_in_convo}\nMessage history context length: {context_length}\nSystem prompt: {system_prompt}"
+                )
+            else:
+                await message.reply(f"No statistics stored for user {message_author}.")
 
 
 def main():
