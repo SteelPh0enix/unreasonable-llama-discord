@@ -14,6 +14,7 @@ from unreasonable_llama import (
 
 MESSAGE_EDIT_COOLDOWN_MS = 750
 MESSAGE_LENGTH_LIMIT = 1990
+BOT_REMOVE_MESSAGE_REACTION = "💀"
 BOT_PREFIX = "$"
 BOT_LLM_INFERENCE_COMMAND = "llm"
 BOT_HELP_COMMAND = "llm-help"
@@ -37,7 +38,9 @@ Default system prompt: {DEFAULT_SYSTEM_PROMPT}
 It's recommended to let the bot finish it's response before requesting a new one. Otherwise, conversation layout may get bugged.
 Tracking is based on user ID only, so the bot will use the same conversation history for all servers (and DMs).
 In other words - if you start talking to the bot in DMs, you can continue talking to him with the same history on any server (and vice-versa).
-**Currently, there's no history trimming implemented (to fit in LLMs context), so it must be cleared manually by the user when it becomes too long.**"""
+**Currently, there's no history trimming implemented (to fit in LLMs context), so it must be cleared manually by the user when it becomes too long.**
+
+Add the {BOT_REMOVE_MESSAGE_REACTION} reaction to a bot's message to remove it. Removing the message this way will not remove it from conversation history."""
 
 
 def update_help_message(new_suffix: str):
@@ -237,9 +240,11 @@ Samplers: `{llm_slot.samplers}`""")
 
     @client.event
     async def on_message(message: discord.Message):
+        # ignore bot messages
         if message.author == client.user:
             return
 
+        # ignore non-commands
         if not message.content.startswith(BOT_PREFIX):
             return
 
@@ -251,6 +256,7 @@ Samplers: `{llm_slot.samplers}`""")
             argument = None
         else:
             command, argument = message_split
+        deletable_replies: list[discord.Message] = []
 
         if command == BOT_LLM_INFERENCE_COMMAND:
             logging.info(
@@ -282,21 +288,25 @@ Samplers: `{llm_slot.samplers}`""")
                 help_first, help_second = split_message(
                     BOT_HELP_MESSAGE, MESSAGE_LENGTH_LIMIT
                 )
-                await message.reply(help_first)
+                deletable_replies.append(await message.reply(help_first))
                 if help_second is not None:
-                    await message.reply(help_second)
+                    deletable_replies.append(await message.reply(help_second))
 
         elif command == BOT_RESET_CONVERSATION_HISTORY_COMMAND:
             logging.info(f"Removing conversation history for {message_author}...")
             if message_author in conversations:
                 del conversations[message_author]
                 logging.info(f"Conversation history for {message_author} deleted!")
-                await message.reply("Conversation history cleared!")
+                deletable_replies.append(
+                    await message.reply("Conversation history cleared!")
+                )
             else:
                 logging.info(
                     f"There's no conversation history saved for {message_author}"
                 )
-                await message.reply("There's no conversation history to clear!")
+                deletable_replies.append(
+                    await message.reply("There's no conversation history to clear!")
+                )
 
         elif command == BOT_STATS_COMMAND:
             logging.info(f"Stats for user {message_author} requested!")
@@ -305,11 +315,36 @@ Samplers: `{llm_slot.samplers}`""")
                 context_length = convo.conversation_length()
                 messages_in_convo = len(convo.conversation_history)
                 system_prompt = convo.conversation_history[0]["content"]
-                await message.reply(
-                    f"User ID: {message_author}\nMessages in conversation history: {messages_in_convo}\nMessage history context length: {context_length}\nSystem prompt: {system_prompt}"
+                deletable_replies.append(
+                    await message.reply(
+                        f"User ID: {message_author}\nMessages in conversation history: {messages_in_convo}\nMessage history context length: {context_length}\nSystem prompt: {system_prompt}"
+                    )
                 )
             else:
-                await message.reply(f"No statistics stored for user {message_author}.")
+                deletable_replies.append(
+                    await message.reply(
+                        f"No statistics stored for user {message_author}."
+                    )
+                )
+
+        for reply in deletable_replies:
+            await reply.add_reaction(BOT_REMOVE_MESSAGE_REACTION)
+
+    @client.event
+    async def on_raw_reaction_add(event: discord.RawReactionActionEvent):
+        logging.debug(f"Client user: {client.user.id}, reaction event: {event}")
+        # ignore non-bot messages
+        if event.message_author_id != client.user.id:
+            return
+
+        # ignore event of adding the reaction by bot
+        if event.user_id == client.user.id:
+            return
+
+        message_channel = await client.fetch_channel(event.channel_id)
+        message_to_delete = await message_channel.fetch_message(event.message_id)
+        logging.info(f"Removing message {message_to_delete.id}")
+        await message_to_delete.delete()
 
 
 def main():
