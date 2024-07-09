@@ -155,7 +155,7 @@ async def request_and_process_llm_response(
     message: discord.Message,
     llama: UnreasonableLlama,
     conversation: LLMConversationHistory,
-    suffix_tokens: list[str],
+    suffix_token: str,
     message_edit_cooldown_ms: int = MESSAGE_EDIT_COOLDOWN_MS,
     message_length_limit: int = MESSAGE_LENGTH_LIMIT,
 ):
@@ -167,8 +167,12 @@ async def request_and_process_llm_response(
 
     async for chunk in generate_streamed_llm_response(llama, prompt):
         response_text += chunk.content
-        for suffix in suffix_tokens:
-            response_text = response_text.removesuffix(suffix)
+        response_text = response_text.removesuffix(suffix_token)
+
+        if len(response_text.strip()) == 0 and response_message is None:
+            # this handles the case where LLM generated empty first message, for example when
+            # tokenizer doesn't add newline at the end of message
+            continue
 
         if response_message is None:
             response_message = await message.reply(response_text)
@@ -379,13 +383,13 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(
         args.model_path_or_url, trust_remote_code=True
     )
-    suffix_tokens = tokenizer.additional_special_tokens + [
+    suffix_token = (
         args.suffix_token if args.suffix_token is not None else tokenizer.eos_token
-    ]
-    logging.info(f"Suffix token: {suffix_tokens}")
+    )
+    logging.info(f"Suffix tokens: {suffix_token}")
     conversations: dict[str, LLMConversationHistory] = {}
 
-    setup_client(client, llama, tokenizer, conversations, suffix_tokens)
+    setup_client(client, llama, tokenizer, conversations, suffix_token)
     client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
 
 
