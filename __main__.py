@@ -155,6 +155,7 @@ async def request_and_process_llm_response(
     message: discord.Message,
     llama: UnreasonableLlama,
     conversation: LLMConversationHistory,
+    suffix_tokens: list[str],
     message_edit_cooldown_ms: int = MESSAGE_EDIT_COOLDOWN_MS,
     message_length_limit: int = MESSAGE_LENGTH_LIMIT,
 ):
@@ -166,7 +167,8 @@ async def request_and_process_llm_response(
 
     async for chunk in generate_streamed_llm_response(llama, prompt):
         response_text += chunk.content
-        response_text = response_text.removesuffix(conversation.tokenizer.eos_token)
+        for suffix in suffix_tokens:
+            response_text = response_text.removesuffix(suffix)
 
         if response_message is None:
             response_message = await message.reply(response_text)
@@ -215,6 +217,7 @@ def setup_client(
     llama: UnreasonableLlama,
     tokenizer: AutoTokenizer,
     conversations: dict[str, LLMConversationHistory],
+    suffix_token: str,
 ):
     @client.event
     async def on_ready():
@@ -279,7 +282,10 @@ Samplers: `{llm_slot.samplers}`""")
 
             async with message.channel.typing():
                 await request_and_process_llm_response(
-                    message, llama, conversations[message_author]
+                    message,
+                    llama,
+                    conversations[message_author],
+                    suffix_token,
                 )
 
         elif command == BOT_HELP_COMMAND:
@@ -341,6 +347,10 @@ Samplers: `{llm_slot.samplers}`""")
         if event.user_id == client.user.id:
             return
 
+        # ignore other emojis
+        if str(event.emoji) != BOT_REMOVE_MESSAGE_REACTION:
+            return
+
         message_channel = await client.fetch_channel(event.channel_id)
         message_to_delete = await message_channel.fetch_message(event.message_id)
         logging.info(f"Removing message {message_to_delete.id}")
@@ -355,6 +365,10 @@ def main():
         help="Path or huggingface.co URL to the model for tokenizer purposes.",
     )
 
+    parser.add_argument(
+        "--suffix-token", type=str, help="Custom suffix token to trim from messages"
+    )
+
     args = parser.parse_args()
 
     intents = discord.Intents.default()
@@ -362,10 +376,16 @@ def main():
     client = discord.Client(intents=intents)
 
     llama = UnreasonableLlama()
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path_or_url)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model_path_or_url, trust_remote_code=True
+    )
+    suffix_tokens = tokenizer.additional_special_tokens + [
+        args.suffix_token if args.suffix_token is not None else tokenizer.eos_token
+    ]
+    logging.info(f"Suffix token: {suffix_tokens}")
     conversations: dict[str, LLMConversationHistory] = {}
 
-    setup_client(client, llama, tokenizer, conversations)
+    setup_client(client, llama, tokenizer, conversations, suffix_tokens)
     client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
 
 
