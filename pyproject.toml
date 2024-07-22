@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "unreasonable-llama-discord"
-version = "0.1.0"
+version = "0.2.0"
 description = "Simple Discord bot using unreasonable-llama"
 authors = ["SteelPh0enix <wojciech_olech@hotmail.com>"]
 readme = "README.md"
