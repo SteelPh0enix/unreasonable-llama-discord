@@ -1,8 +1,8 @@
 """Utilities for interacting with Discord"""
 
-import discord
-
 import logging
+
+import discord
 
 
 class SteelLlamaDiscordClient(discord.Client):
@@ -38,5 +38,20 @@ class SteelLlamaDiscordClient(discord.Client):
     async def on_message(self, message: discord.Message):
         logging.debug(f"Message detected: {message}")
 
-    async def on_raw_reaction_add(event: discord.RawReactionActionEvent):
-        pass
+    def is_reaction_to_be_handled(
+        self,
+        event: discord.RawReactionActionEvent,
+    ) -> bool:
+        message_is_from_bot = event.message_author_id == self.user.id
+        reaction_was_added_by_bot = event.user_id == self.user.id
+        return message_is_from_bot and not reaction_was_added_by_bot
+
+    async def on_raw_reaction_add(self, event: discord.RawReactionActionEvent):
+        if not self.is_reaction_to_be_handled(event):
+            return
+
+        if str(event.emoji) == self.message_removal_reaction:
+            message_channel = await self.fetch_channel(event.channel_id)
+            message_to_delete = await message_channel.fetch_message(event.message_id)
+            logging.info(f"Removing message {message_to_delete.id}")
+            await message_to_delete.delete()
