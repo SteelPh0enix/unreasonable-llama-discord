@@ -42,7 +42,7 @@ def create_default_bot_configuration(path: Path, overwrite: bool):
 
     with path.open("wb") as config_file:
         config_file.write(DEFAULT_CONFIG.encode("utf-8"))
-        logging.info(f"Default config written to {path}.")
+        logging.info(f"Default config created at {path}.")
 
 
 def parse_script_arguments() -> argparse.Namespace:
@@ -77,10 +77,11 @@ def main(args: argparse.Namespace):
     config_path = Path(args.config_file)
     bot_config = load_bot_configuration(config_path)
     if bot_config is None:
+        logging.debug("Could not load configuration, creating default...")
         create_default_bot_configuration(config_path, args.overwrite_config_file)
         bot_config = load_bot_configuration(config_path)
 
-    print(f"config: {bot_config}")
+    logging.debug(f"Loaded configuration: {bot_config}")
 
 
 if __name__ == "__main__":
@@ -89,4 +90,5 @@ if __name__ == "__main__":
         log_level_mapping = logging.getLevelNamesMapping()
         log_level = log_level_mapping[args.log_level.upper()]
         logging.basicConfig(level=log_level)
+        logging.debug(f"Current logging level: {log_level}")
     main(args)
