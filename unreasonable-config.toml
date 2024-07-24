@@ -1,0 +1,14 @@
+[messages]
+edit-cooldown-ms = 750
+length-limit = 1990
+remove-reaction = "💀"
+
+[commands]
+prefix = "$"
+inference-cmd = "llm"
+help-cmd = "llm-help"
+reset-conversation-cmd = "llm-reset"
+stats-cmd = "llm-stats"
+
+[bot]
+default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."

@@ -2,10 +2,13 @@
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
 import tomllib
+
+from discord_client import SteelLlamaDiscordClient
 
 DEFAULT_CONFIG = """[messages]
 edit-cooldown-ms = 750
@@ -83,6 +86,9 @@ def main(args: argparse.Namespace):
 
     logging.debug(f"Loaded configuration: {bot_config}")
 
+    client = SteelLlamaDiscordClient(bot_config)
+    client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
+
 
 if __name__ == "__main__":
     args = parse_script_arguments()
@@ -90,5 +96,4 @@ if __name__ == "__main__":
         log_level_mapping = logging.getLevelNamesMapping()
         log_level = log_level_mapping[args.log_level.upper()]
         logging.basicConfig(level=log_level)
-        logging.debug(f"Current logging level: {log_level}")
     main(args)
