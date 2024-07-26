@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 import tomllib
 
@@ -27,7 +28,7 @@ default-system-prompt = "You are a helpful AI assistant. Assist the user best to
 """
 
 
-def load_bot_configuration(path: Path) -> dict | None:
+def load_bot_configuration(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
 
@@ -36,7 +37,7 @@ def load_bot_configuration(path: Path) -> dict | None:
         return tomllib.load(config_file)
 
 
-def create_default_bot_configuration(path: Path, overwrite: bool):
+def create_default_bot_configuration(path: Path, overwrite: bool) -> None:
     if path.exists() and not overwrite:
         logging.critical(
             f"Configuration file {path} exists, and i'm forbidden from overwriting it! Exiting..."
@@ -76,7 +77,7 @@ def parse_script_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main(args: argparse.Namespace):
+def main(args: argparse.Namespace) -> None:
     config_path = Path(args.config_file)
     bot_config = load_bot_configuration(config_path)
     if bot_config is None:
@@ -85,9 +86,21 @@ def main(args: argparse.Namespace):
         bot_config = load_bot_configuration(config_path)
 
     logging.debug(f"Loaded configuration: {bot_config}")
+    if bot_config is None:
+        logging.critical(
+            "something very weird happened and i couldn't load config, exiting!"
+        )
+        sys.exit(2)
+
+    api_key = os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY")
+    if api_key is None:
+        logging.critical(
+            "Couldn't load API key from environmental variable UNREASONABLE_LLAMA_DISCORD_API_KEY, exiting!"
+        )
+        sys.exit(3)
 
     client = SteelLlamaDiscordClient(bot_config)
-    client.run(os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY"))
+    client.run(api_key)
 
 
 if __name__ == "__main__":
