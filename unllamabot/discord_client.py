@@ -59,8 +59,6 @@ class SteelLlamaDiscordClient(discord.Client):
                 message_channel,
                 discord.TextChannel | discord.Thread,
             ):
-                message_to_delete = await message_channel.fetch_message(
-                    event.message_id
-                )
+                message_to_delete = await message_channel.fetch_message(event.message_id)
                 logging.info(f"Removing message {message_to_delete.id}")
                 await message_to_delete.delete()

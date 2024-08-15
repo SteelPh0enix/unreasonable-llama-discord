@@ -56,14 +56,16 @@ def parse_script_arguments() -> argparse.Namespace:
         "--config-file",
         type=str,
         default="unreasonable-config.toml",
-        help="Path to bot's configuration file. Ff the file doesn't exist, then it will be created with default configuration.",
+        help="Path to bot's configuration file. "
+        "If the file doesn't exist, then it will be created with default configuration.",
     )
 
     parser.add_argument(
         "--overwrite-config-file",
         action="store_true",
         default=False,
-        help="When used, config file will be overwritten if it exists but cannot be loaded. Default behavior is exitting with exit code 1 instead.",
+        help="When used, config file will be overwritten if it exists but cannot be loaded. "
+        "Default behavior is exitting with exit code 1 instead.",
     )
 
     parser.add_argument(
