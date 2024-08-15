@@ -1,5 +1,5 @@
 #!/bin/sh
-python_files=$(ls ./*.py)
+python_files=$(ls ./unllamabot/*.py)
 echo "Checked files: $python_files"
 poetry run ruff format $python_files
 poetry run mypy --strict --pretty $python_files
