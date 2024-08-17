@@ -39,9 +39,7 @@ def load_bot_configuration(path: Path) -> dict[str, Any] | None:
 
 def create_default_bot_configuration(path: Path, overwrite: bool) -> None:
     if path.exists() and not overwrite:
-        logging.critical(
-            f"Configuration file {path} exists, and i'm forbidden from overwriting it! Exiting..."
-        )
+        logging.critical(f"Configuration file {path} exists, and i'm forbidden from overwriting it! Exiting...")
         sys.exit(1)
 
     with path.open("wb") as config_file:
@@ -89,9 +87,7 @@ def main(args: argparse.Namespace) -> None:
 
     logging.debug(f"Loaded configuration: {bot_config}")
     if bot_config is None:
-        logging.critical(
-            "something very weird happened and i couldn't load config, exiting!"
-        )
+        logging.critical("Something very weird happened and i couldn't load config, exiting!")
         sys.exit(2)
 
     api_key = os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY")
