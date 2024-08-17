@@ -39,7 +39,7 @@ class SteelLlamaDiscordClient(discord.Client):
     async def on_message(self, message: discord.Message) -> None:
         logging.debug(f"Message detected: {message}")
 
-    def is_reaction_to_be_handled(
+    def should_reaction_be_handled(
         self,
         event: discord.RawReactionActionEvent,
     ) -> bool:
@@ -50,7 +50,7 @@ class SteelLlamaDiscordClient(discord.Client):
         return False
 
     async def on_raw_reaction_add(self, event: discord.RawReactionActionEvent) -> None:
-        if not self.is_reaction_to_be_handled(event):
+        if not self.should_reaction_be_handled(event):
             return
 
         if str(event.emoji) == self.message_removal_reaction:
@@ -59,6 +59,12 @@ class SteelLlamaDiscordClient(discord.Client):
                 message_channel,
                 discord.TextChannel | discord.Thread,
             ):
-                message_to_delete = await message_channel.fetch_message(event.message_id)
+                message_to_delete = await message_channel.fetch_message(
+                    event.message_id
+                )
                 logging.info(f"Removing message {message_to_delete.id}")
                 await message_to_delete.delete()
+            else:
+                logging.warning(
+                    f"Message removal emoji sent to {message_channel} - cannot fetch and delete the target message!"
+                )
