@@ -1,33 +1,63 @@
 """Utilities for interacting with Discord"""
 
+from __future__ import annotations
+
 import logging
+from dataclasses import dataclass
 from typing import Any
 
 import discord
 
 
+@dataclass
+class SteelLlamaConfig:
+    message_edit_cooldown: int
+    """Time between consecutive message edits, in milliseconds."""
+    message_length_limit: int
+    """Length limit of a single message. Longer messages will be split into multiple shorter messages."""
+    message_removal_reaction: str
+    """Reaction to use in order to make the bot remove it's message on Discord"""
+    bot_prefix: str
+    """Prefix character (or string) of the bot"""
+    default_system_prompt: str
+    """Default system prompt for the LLM"""
+
+    @staticmethod
+    def from_dict(config: dict[str, Any]) -> SteelLlamaConfig:
+        message_edit_cooldown = config["messages"]["edit-cooldown-ms"]
+        message_length_limit = config["messages"]["length-limit"]
+        message_removal_reaction = config["messages"]["remove-reaction"]
+        bot_prefix = config["commands"]["prefix"]
+        default_system_prompt = config["bot"]["default-system-prompt"]
+
+        return SteelLlamaConfig(
+            message_edit_cooldown,
+            message_length_limit,
+            message_removal_reaction,
+            bot_prefix,
+            default_system_prompt,
+        )
+
+    def __str__(self) -> str:
+        return f"""Prefix: {self.bot_prefix}
+Default system prompt: {self.default_system_prompt}
+Message edit cooldown: {self.message_edit_cooldown}
+Message length limit: {self.message_length_limit}
+Message removal reaction: {self.message_removal_reaction}"""
+
+
 class SteelLlamaDiscordClient(discord.Client):
     def __init__(self, config: dict[str, Any]):
-        self.message_edit_cooldown = config["messages"]["edit-cooldown-ms"]
-        self.message_length_limit = config["messages"]["length-limit"]
-        self.message_removal_reaction = config["messages"]["remove-reaction"]
+        self.config = SteelLlamaConfig.from_dict(config)
+        logging.info(f"Loaded bot configuration:\n{self.config}")
 
-        self.bot_prefix = config["commands"]["prefix"]
         self.commands = {
             command_name.removesuffix("-cmd"): command
             for command_name, command in config["commands"].items()
             if command_name.endswith("-cmd")
         }
 
-        self.default_system_prompt = config["bot"]["default-system-prompt"]
-
-        logging.info(f"""Loaded bot configuration:
-                     message_edit_cooldown: {self.message_edit_cooldown}
-                     message_length_limit: {self.message_length_limit}
-                     message_removal_reaction: {self.message_removal_reaction}
-                     bot_prefix: {self.bot_prefix}
-                     commands: {self.commands}
-                     default_system_prompt: {self.default_system_prompt}""")
+        logging.info(f"Loaded commands: {[name for name in self.commands.keys()]}")
 
         intents = discord.Intents.default()
         intents.message_content = True
@@ -53,7 +83,7 @@ class SteelLlamaDiscordClient(discord.Client):
         if not self.should_reaction_be_handled(event):
             return
 
-        if str(event.emoji) == self.message_removal_reaction:
+        if str(event.emoji) == self.config.message_removal_reaction:
             message_channel = await self.fetch_channel(event.channel_id)
             if isinstance(
                 message_channel,
