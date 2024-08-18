@@ -24,4 +24,3 @@ jobs:
         run: poetry run ruff check --no-fix --no-unsafe-fixes --statistics $(ls ./unllamabot/*.py)
       - name: 'Check code with mypy'
         run: poetry run mypy --strict --pretty $(ls ./unllamabot/*.py)
-
