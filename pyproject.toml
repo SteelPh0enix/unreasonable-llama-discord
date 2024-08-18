@@ -20,6 +20,7 @@ protobuf = "^5.27.2"
 ruff = "^0.5.5"
 ruff-lsp = "^0.0.54"
 mypy = "^1.11.0"
+pre-commit = "^3.8.0"
 
 [tool.ruff]
 line-length = 120
