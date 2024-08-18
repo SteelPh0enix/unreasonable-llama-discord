@@ -1649,13 +1649,13 @@ files = [
 
 [[package]]
 name = "unreasonable-llama"
-version = "0.2.2"
+version = "0.2.5"
 description = "HTTP API bindings for llama.cpp built-in server"
 optional = false
 python-versions = "<4.0,>=3.12"
 files = [
-    {file = "unreasonable_llama-0.2.2-py3-none-any.whl", hash = "sha256:9c5ecb290fcd8c83dcaef2a6497be70d3c8e2866dd73341ae1ba094169b8dd8a"},
-    {file = "unreasonable_llama-0.2.2.tar.gz", hash = "sha256:d524a6c114739913e4ca274c748f13ba7ed6b9f7528c9841c2d934e5347cf9ea"},
+    {file = "unreasonable_llama-0.2.5-py3-none-any.whl", hash = "sha256:ad0679812c087ba21e5c83962b1b9abb56f4ad8bd5c7b442122b6017be899caa"},
+    {file = "unreasonable_llama-0.2.5.tar.gz", hash = "sha256:8b6a0622a350e02a83de856e0da05e9bef29284207cd4e77cf138378fc93547d"},
 ]
 
 [package.dependencies]
@@ -1804,4 +1804,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "5c32e187effb672605005a9b04989cc06de02369567b31e23d36194766a7aed2"
+content-hash = "e36c9b505bb3be5cfd29d8855de1a107a3227ff0b9995f0567bdd552cff4af0a"
