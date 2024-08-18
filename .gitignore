@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 
 /TODO.md
+/run.ps1
+/run.sh
