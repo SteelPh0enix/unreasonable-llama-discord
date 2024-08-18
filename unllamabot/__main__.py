@@ -48,10 +48,12 @@ def main(args: argparse.Namespace) -> None:
         create_default_bot_configuration(config_path, args.overwrite_config_file)
         bot_config = load_bot_configuration(config_path)
 
-    logging.debug(f"Loaded configuration: {bot_config}")
     if bot_config is None:
         logging.critical("Something very weird happened and i couldn't load config, exiting!")
         sys.exit(2)
+
+    logging.info(f"Loaded configuration:\n{bot_config}")
+    logging.info(f"Loaded commands: {bot_config.commands}")
 
     api_key = os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY")
     if api_key is None:
@@ -69,5 +71,5 @@ if __name__ == "__main__":
     if args.log_level != "none":
         log_level_mapping = logging.getLevelNamesMapping()
         log_level = log_level_mapping[args.log_level.upper()]
-        logging.basicConfig(level=log_level)
+        logging.basicConfig(level=log_level, format="[%(asctime)s] [%(levelname)s] %(message)s")
     main(args)

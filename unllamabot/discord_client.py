@@ -11,9 +11,6 @@ from bot_config import SteelLlamaConfig
 class SteelLlamaDiscordClient(discord.Client):
     def __init__(self, config: SteelLlamaConfig):
         self.config = config
-        logging.info(f"Loaded bot configuration:\n{self.config}")
-        logging.debug(f"Loaded commands: {self.config.commands.keys()}")
-
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(intents=intents)
