@@ -9,7 +9,7 @@ from bot_config import SteelLlamaConfig
 
 
 class SteelLlamaDiscordClient(discord.Client):
-    def __init__(self, config: SteelLlamaConfig):
+    def __init__(self, config: SteelLlamaConfig) -> None:
         self.config = config
         intents = discord.Intents.default()
         intents.message_content = True

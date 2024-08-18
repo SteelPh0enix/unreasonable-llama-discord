@@ -24,6 +24,12 @@ stats-cmd = "llm-stats"
 
 [bot]
 default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."
+
+[llama]
+# URL is optional, if not provided it will be loaded from LLAMA_CPP_SERVER_URL env variable,
+# as it's UnreasonableLlama fallback behaviour.
+# url = "http://127.0.0.1:8080/"
+server_timeout = 10000
 """
 
 
@@ -34,13 +40,17 @@ class SteelLlamaConfig:
     message_length_limit: int
     """Length limit of a single message. Longer messages will be split into multiple shorter messages."""
     message_removal_reaction: str
-    """Reaction to use in order to make the bot remove it's message on Discord"""
+    """Reaction to use in order to make the bot remove it's message on Discord."""
     bot_prefix: str
-    """Prefix character (or string) of the bot"""
+    """Prefix character (or string) of the bot."""
     default_system_prompt: str
-    """Default system prompt for the LLM"""
+    """Default system prompt for the LLM."""
     commands: dict[str, str]
-    """Mapping of Discord commands to bot's commands"""
+    """Mapping of Discord commands to bot's commands."""
+    llama_request_timeout: int
+    """Timeout for llama.cpp server requests, in milliseconds."""
+    llama_url: str | None
+    """llama.cpp server URL, if None the LLAMA_CPP_SERVER_URL env var will be used instead."""
 
     @staticmethod
     def from_dict(config: dict[str, Any]) -> SteelLlamaConfig:
@@ -54,6 +64,8 @@ class SteelLlamaConfig:
             for command_name, command in config["commands"].items()
             if command_name.endswith("-cmd")
         }
+        llama_request_timeout = config["llama"]["server_timeout"]
+        llama_url = config["llama"].get("url")
 
         return SteelLlamaConfig(
             message_edit_cooldown,
@@ -62,14 +74,9 @@ class SteelLlamaConfig:
             bot_prefix,
             default_system_prompt,
             commands,
+            llama_request_timeout,
+            llama_url,
         )
-
-    def __str__(self) -> str:
-        return f"""Prefix: {self.bot_prefix}
-Default system prompt: {self.default_system_prompt}
-Message edit cooldown: {self.message_edit_cooldown}
-Message length limit: {self.message_length_limit}
-Message removal reaction: {self.message_removal_reaction}"""
 
 
 def load_bot_configuration(path: Path) -> SteelLlamaConfig | None:

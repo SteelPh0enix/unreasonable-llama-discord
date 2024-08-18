@@ -52,8 +52,7 @@ def main(args: argparse.Namespace) -> None:
         logging.critical("Something very weird happened and i couldn't load config, exiting!")
         sys.exit(2)
 
-    logging.info(f"Loaded configuration:\n{bot_config}")
-    logging.info(f"Loaded commands: {bot_config.commands}")
+    logging.info(f"Loaded configuration: {bot_config}")
 
     api_key = os.getenv("UNREASONABLE_LLAMA_DISCORD_API_KEY")
     if api_key is None:
