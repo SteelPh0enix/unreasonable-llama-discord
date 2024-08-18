@@ -94,5 +94,5 @@ class SteelLlamaDiscordClient(discord.Client):
                 await message_to_delete.delete()
             else:
                 logging.warning(
-                    f"Message removal emoji sent to {message_channel} - cannot fetch and delete the target message!"
+                    f"Message removal emoji received from channel {message_channel} - cannot fetch and delete the target message!"
                 )
