@@ -5,46 +5,9 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any
-
-import tomllib
+from bot_config import load_bot_configuration, create_default_bot_configuration
 
 from discord_client import SteelLlamaDiscordClient
-
-DEFAULT_CONFIG = """[messages]
-edit-cooldown-ms = 750
-length-limit = 1990
-remove-reaction = "💀"
-
-[commands]
-prefix = "$"
-inference-cmd = "llm"
-help-cmd = "llm-help"
-reset-conversation-cmd = "llm-reset"
-stats-cmd = "llm-stats"
-
-[bot]
-default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."
-"""
-
-
-def load_bot_configuration(path: Path) -> dict[str, Any] | None:
-    if not path.exists():
-        return None
-
-    with path.open("rb") as config_file:
-        logging.info(f"Reading configuration from {path}...")
-        return tomllib.load(config_file)
-
-
-def create_default_bot_configuration(path: Path, overwrite: bool) -> None:
-    if path.exists() and not overwrite:
-        logging.critical(f"Configuration file {path} exists, and i'm forbidden from overwriting it! Exiting...")
-        sys.exit(1)
-
-    with path.open("wb") as config_file:
-        config_file.write(DEFAULT_CONFIG.encode("utf-8"))
-        logging.info(f"Default config created at {path}.")
 
 
 def parse_script_arguments() -> argparse.Namespace:
