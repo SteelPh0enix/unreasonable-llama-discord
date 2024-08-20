@@ -11,7 +11,7 @@ repos:
     rev: 'v1.11.1'
     hooks:
     -   id: mypy
-        args: [--strict, --pretty, --ignore-missing-imports, --allow-subclassing-any]
+        args: [--strict, --pretty, --ignore-missing-imports, --allow-subclassing-any, --explicit-package-bases]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:

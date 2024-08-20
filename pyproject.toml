@@ -20,9 +20,15 @@ ruff = "^0.5.5"
 ruff-lsp = "^0.0.54"
 mypy = "^1.11.0"
 pre-commit = "^3.8.0"
+pytest = "^8.3.2"
 
 [tool.ruff]
 line-length = 120
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["*_tests.py"]
+python_functions = ["test_*"]
 
 [build-system]
 requires = ["poetry-core"]
