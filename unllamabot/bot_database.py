@@ -53,7 +53,7 @@ def _requires_open_db(func) -> Callable:  # type: ignore
 
 
 class BotDatabase:
-    def __init__(self, database_path: Path | None = None, default_system_prompt: str = "") -> None:
+    def __init__(self, database_path: Path | str | None = None, default_system_prompt: str = "") -> None:
         self.default_system_prompt = default_system_prompt
         self.is_open = False
         if database_path is not None:
@@ -66,7 +66,7 @@ class BotDatabase:
         self.db = sqlite3.connect(database_path)
         self.is_open = True
         self._initialize_database()
-        self.update_global_default_system_prompt(self.default_system_prompt)
+        self.change_global_default_system_prompt(self.default_system_prompt)
 
     @_requires_open_db
     def close(self) -> None:
@@ -74,7 +74,7 @@ class BotDatabase:
         self.is_open = False
 
     @_requires_open_db
-    def update_global_default_system_prompt(self, new_system_prompt: str) -> int:
+    def change_global_default_system_prompt(self, new_system_prompt: str) -> int:
         with self.db as db:
             query = db.execute(
                 "UPDATE users SET system_prompt = ? WHERE system_prompt == ?",
@@ -114,7 +114,7 @@ class BotDatabase:
     @_requires_open_db
     def user_exists(self, user_id: int) -> bool:
         query = self.db.execute("SELECT EXISTS(SELECT 1 FROM users WHERE id == ?)", (user_id,))
-        return query.rowcount == 1
+        return query.fetchone()[0] == 1
 
     @_requires_open_db
     def change_user_system_prompt(
@@ -166,12 +166,24 @@ class BotDatabase:
         messages = []
         for result in query.fetchall():
             id, timestamp, position, role, message = result
-            messages.append(Message(id, user_id, datetime.fromtimestamp(timestamp), position, role, message))
+            messages.append(
+                Message(
+                    id,
+                    user_id,
+                    datetime.fromtimestamp(timestamp),
+                    position,
+                    role,
+                    message,
+                )
+            )
         return messages if len(messages) > 0 else None
 
     @_requires_open_db
     def get_nth_user_message(self, user_id: int, position: int) -> Message | None:
-        query = self.db.execute("SELECT id FROM messages WHERE user_id == ? AND position == ?", (user_id, position))
+        query = self.db.execute(
+            "SELECT id FROM messages WHERE user_id == ? AND position == ?",
+            (user_id, position),
+        )
         if result := query.fetchone():
             return self.get_message(result[0])  # type: ignore
         return None
@@ -241,17 +253,21 @@ class BotDatabase:
         with self.db as db:
             db.execute("PRAGMA foreign_keys = ON;")
 
-            db.execute("""CREATE TABLE IF NOT EXISTS users (
+            db.execute(
+                """CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY,
-                    system_prompt TEXT NOT NULL)""")
+                    system_prompt TEXT NOT NULL)"""
+            )
 
-            db.execute("""CREATE TABLE IF NOT EXISTS messages (
+            db.execute(
+                """CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY,
                 user_id INTEGER NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
                 timestamp INTEGER NOT NULL,
                 position INTEGER NOT NULL,
                 role TEXT NOT NULL,
-                message TEXT NOT NULL)""")
+                message TEXT NOT NULL)"""
+            )
 
     @_requires_open_db
     def _next_user_message_position(self, user_id: int) -> int:
