@@ -1,10 +1,11 @@
 #!/bin/sh
 
-python_files=$(ls ./unllamabot/*.py)
-echo "Checked files: $python_files"
-
 set -xeo pipefail
 
-poetry run ruff format $python_files
-poetry run mypy --strict --pretty $python_files
-poetry run ruff check --fix $python_files
+poetry run ruff format $(ls ./unllamabot/*.py)
+poetry run mypy --strict --pretty $(ls ./unllamabot/*.py)
+poetry run ruff check --fix $(ls ./unllamabot/*.py)
+
+poetry run ruff format $(ls ./tests/*.py)
+poetry run mypy --strict --pretty $(ls ./tests/*.py)
+poetry run ruff check --fix $(ls ./tests/*.py)

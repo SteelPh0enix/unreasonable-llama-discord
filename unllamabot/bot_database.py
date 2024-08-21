@@ -43,6 +43,20 @@ class Message:
     message: str
 
 
+def adapt_datetime_iso(val: datetime) -> str:
+    """Adapt datetime.datetime to timezone-naive ISO 8601 date."""
+    return val.isoformat()
+
+
+def convert_datetime(val: bytes) -> datetime:
+    """Convert ISO 8601 datetime to datetime.datetime object."""
+    return datetime.fromisoformat(val.decode())
+
+
+sqlite3.register_adapter(datetime, adapt_datetime_iso)
+sqlite3.register_converter("datetime", convert_datetime)
+
+
 def _requires_open_db(func) -> Callable:  # type: ignore
     def wrapper(self, *args, **kwargs) -> Callable:  # type: ignore
         if not self.is_open:
@@ -157,7 +171,7 @@ class BotDatabase:
         return None
 
     @_requires_open_db
-    def get_user_messages(self, user_id: int) -> list[Message] | None:
+    def get_user_messages(self, user_id: int) -> list[Message]:
         query = self.db.execute(
             "SELECT id, timestamp, position, role, message FROM messages WHERE user_id == ? ORDER BY position ASC",
             (user_id,),
@@ -176,7 +190,7 @@ class BotDatabase:
                     message,
                 )
             )
-        return messages if len(messages) > 0 else None
+        return messages
 
     @_requires_open_db
     def get_nth_user_message(self, user_id: int, position: int) -> Message | None:
