@@ -1,5 +1,5 @@
 name: Check code formatting and validity
-run-name: Check the library's code formatting and validity with Ruff and mypy.
+run-name: Check the library's code validity/formatting + run unit tests.
 on: push
 
 jobs:
