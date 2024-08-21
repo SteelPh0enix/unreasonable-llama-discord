@@ -114,7 +114,7 @@ class BotDatabase:
     @_requires_open_db
     def user_exists(self, user_id: int) -> bool:
         query = self.db.execute("SELECT EXISTS(SELECT 1 FROM users WHERE id == ?)", (user_id,))
-        return query.fetchone()[0] == 1
+        return bool(query.fetchone()[0] == 1)
 
     @_requires_open_db
     def change_user_system_prompt(
