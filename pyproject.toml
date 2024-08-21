@@ -29,6 +29,7 @@ line-length = 120
 testpaths = ["tests"]
 python_files = ["*_tests.py"]
 python_functions = ["test_*"]
+pythonpath = ["."]
 
 [build-system]
 requires = ["poetry-core"]
