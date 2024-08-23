@@ -163,7 +163,7 @@ class BotDatabase:
             return Message(
                 message_id,
                 user_id,
-                datetime.fromtimestamp(timestamp),
+                datetime.fromisoformat(timestamp),
                 position,
                 role,
                 message,
@@ -184,7 +184,7 @@ class BotDatabase:
                 Message(
                     id,
                     user_id,
-                    datetime.fromtimestamp(timestamp),
+                    datetime.fromisoformat(timestamp),
                     position,
                     role,
                     message,
@@ -211,9 +211,10 @@ class BotDatabase:
         message: str,
         create_user_if_not_found: bool = True,
     ) -> None:
-        if self.get_user(user_id) is None:
-            if create_user_if_not_found and not self.add_user(user_id):
-                raise CouldNotCreateUser(user_id)
+        if not self.user_exists(user_id):
+            if create_user_if_not_found:
+                if not self.add_user(user_id):
+                    raise CouldNotCreateUser(user_id)
             else:
                 raise UserDoesNotExist(user_id)
 
