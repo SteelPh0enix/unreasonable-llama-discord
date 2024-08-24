@@ -37,11 +37,22 @@ def add_messages(db: BotDatabase, messages: Sequence[tuple[int, str, str]], crea
         db.add_message(user_id, None, role, message, create_user)
 
 
-def validate_messages(db: BotDatabase, messages: Sequence[tuple[int, int, str, str]]) -> None:
+def validate_messages_ignoring_timestamps(db: BotDatabase, messages: Sequence[tuple[int, int, str, str]]) -> None:
     for user_id, position, role, message_text in messages:
         message = db.get_nth_user_message(user_id, position)
         assert message is not None
         assert message.user_id == user_id
+        assert message.position == position
+        assert message.role == role
+        assert message.message == message_text
+
+
+def validate_messages(db: BotDatabase, messages: Sequence[tuple[int, datetime, int, str, str]]) -> None:
+    for user_id, timestamp, position, role, message_text in messages:
+        message = db.get_nth_user_message(user_id, position)
+        assert message is not None
+        assert message.user_id == user_id
+        assert message.timestamp == timestamp
         assert message.position == position
         assert message.role == role
         assert message.message == message_text
@@ -120,6 +131,10 @@ def test_adding_users() -> None:
     create_users(db, test_users_data)
     validate_users(db, test_users_data, "")
 
+    # check if user cannot be added with same ID again
+    assert db.add_user(1) is False
+    assert db.add_user(1, "custom prompt") is False
+
 
 def test_adding_users_with_custom_default_prompt() -> None:
     db = BotDatabase(TEST_DB_PATH, TEST_SYSTEM_PROMPT_DEFAULT)
@@ -195,6 +210,8 @@ def test_deleting_users() -> None:
 
     assert db.delete_user(1) is True
     assert db.delete_user(123) is True
+    assert db.delete_user(9999) is False
+    assert db.delete_user(123) is False
 
     expected_test_users_data = (
         (2, ""),
@@ -204,48 +221,34 @@ def test_deleting_users() -> None:
     assert len(db.get_user_messages(1)) == 0
 
 
-def test_adding_message() -> None:
+def test_adding_messages() -> None:
     db = BotDatabase(TEST_DB_PATH)
     create_users(db, ((1, None),))
-
-    expected_timestamp = datetime(year=2221, month=11, day=11)
-    db.add_message(
-        1,
-        expected_timestamp,
-        "test_role",
-        "test_message_content",
-        create_user_if_not_found=False,
+    expected_timestamp_a = datetime(year=2222, month=11, day=22)
+    expected_timestamp_b = datetime(year=2223, month=11, day=22)
+    expected_messages = (
+        (123, expected_timestamp_a, 0, "user", "user request"),
+        (123, expected_timestamp_b, 1, "assistant", "assistant answer"),
     )
-    created_message = db.get_nth_user_message(1, 0)
-    assert created_message is not None
-    assert created_message.user_id == 1
-    assert created_message.timestamp == expected_timestamp
-    assert created_message.position == 0
-    assert created_message.role == "test_role"
-    assert created_message.message == "test_message_content"
+    for user_id, timestamp, _, role, content in expected_messages:
+        db.add_message(user_id, timestamp, role, content, create_user_if_not_found=True)
+    validate_messages(db, expected_messages)
 
 
 def test_adding_message_and_creating_user() -> None:
     db = BotDatabase(TEST_DB_PATH)
-    expected_timestamp = datetime(year=2222, month=11, day=22)
-
-    assert not db.user_exists(123)
-    db.add_message(
-        123,
-        expected_timestamp,
-        "test_role",
-        "test_message_content",
-        create_user_if_not_found=True,
+    expected_timestamp_a = datetime(year=2222, month=11, day=22)
+    expected_timestamp_b = datetime(year=2223, month=11, day=22)
+    expected_messages = (
+        (123, expected_timestamp_a, 0, "user", "user request"),
+        (123, expected_timestamp_b, 1, "assistant", "assistant answer"),
     )
 
+    assert not db.user_exists(123)
+    for user_id, timestamp, _, role, content in expected_messages:
+        db.add_message(user_id, timestamp, role, content, create_user_if_not_found=True)
     assert db.user_exists(123)
-    created_message = db.get_nth_user_message(123, 0)
-    assert created_message is not None
-    assert created_message.user_id == 123
-    assert created_message.timestamp == expected_timestamp
-    assert created_message.position == 0
-    assert created_message.role == "test_role"
-    assert created_message.message == "test_message_content"
+    validate_messages(db, expected_messages)
 
 
 def test_adding_message_with_default_timestamp() -> None:
@@ -259,7 +262,7 @@ def test_adding_message_with_default_timestamp() -> None:
     assert abs(created_message.timestamp - expected_timestamp).microseconds <= 100_000
 
 
-def test_adding_message_to_nonexistent_user_is_failing() -> None:
+def test_adding_message_to_nonexistent_user() -> None:
     db = BotDatabase(TEST_DB_PATH)
 
     expected_timestamp = datetime(year=2221, month=11, day=11)
@@ -326,11 +329,13 @@ def test_getting_nth_user_message() -> None:
 
     expected_user_id, expected_role, expected_message = expected_message_a
     assert user_a_message.user_id == expected_user_id
+    assert user_a_message.position == 2
     assert user_a_message.role == expected_role
     assert user_a_message.message == expected_message
 
     expected_user_id, expected_role, expected_message = expected_message_b
     assert user_b_message.user_id == expected_user_id
+    assert user_b_message.position == 1
     assert user_b_message.role == expected_role
     assert user_b_message.message == expected_message
 
@@ -470,5 +475,8 @@ def test_clearing_user_messages() -> None:
     assert len(db.get_user_messages(1)) == 4
     assert len(db.get_user_messages(2)) == 4
     db.clear_user_messages(1)
+    assert len(db.get_user_messages(1)) == 0
+    assert len(db.get_user_messages(2)) == 4
+    db.clear_user_messages(123)
     assert len(db.get_user_messages(1)) == 0
     assert len(db.get_user_messages(2)) == 4

@@ -6,6 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
+import logging
+
 
 class DatabaseAlreadyOpen(Exception):
     pass
@@ -113,10 +115,17 @@ class BotDatabase:
             system_prompt = self.default_system_prompt
 
         with self.db as db:
-            query = db.execute(
-                "INSERT INTO users(id, system_prompt) VALUES (?, ?)",
-                (user_id, system_prompt),
-            )
+            try:
+                query = db.execute(
+                    "INSERT INTO users(id, system_prompt) VALUES (?, ?)",
+                    (user_id, system_prompt),
+                )
+            except sqlite3.IntegrityError:
+                logging.error(f"Tried to add an user with existing ID: {user_id}")
+                return False
+            except Exception as e:
+                logging.critical(f"Unhandled sqlite exception raised in add_user: {e}!")
+                raise
         return query.rowcount == 1
 
     @_requires_open_db
