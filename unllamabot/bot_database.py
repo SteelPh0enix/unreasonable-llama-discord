@@ -43,18 +43,18 @@ class Message:
     message: str
 
 
-def adapt_datetime_iso(val: datetime) -> str:
+def _adapt_datetime_iso(val: datetime) -> str:
     """Adapt datetime.datetime to timezone-naive ISO 8601 date."""
     return val.isoformat()
 
 
-def convert_datetime(val: bytes) -> datetime:
+def _convert_datetime(val: bytes) -> datetime:
     """Convert ISO 8601 datetime to datetime.datetime object."""
     return datetime.fromisoformat(val.decode())
 
 
-sqlite3.register_adapter(datetime, adapt_datetime_iso)
-sqlite3.register_converter("datetime", convert_datetime)
+sqlite3.register_adapter(datetime, _adapt_datetime_iso)
+sqlite3.register_converter("datetime", _convert_datetime)
 
 
 def _requires_open_db(func) -> Callable:  # type: ignore
