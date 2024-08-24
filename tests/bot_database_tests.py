@@ -6,6 +6,7 @@ import pytest
 from unllamabot.bot_database import (
     BotDatabase,
     DatabaseNotOpen,
+    Message,
     UserDoesNotExist,
 )
 
@@ -56,6 +57,55 @@ def test_creating_empty_database() -> None:
     db.open(TEST_DB_PATH)
     assert db.is_open
     db.close()
+
+
+def test_functions_throw_on_unopened_database() -> None:
+    db = BotDatabase()
+
+    with pytest.raises(DatabaseNotOpen):
+        db.close()
+
+    with pytest.raises(DatabaseNotOpen):
+        db.change_global_default_system_prompt("")
+
+    with pytest.raises(DatabaseNotOpen):
+        db.get_user(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.add_user(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.delete_user(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.user_exists(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.change_user_system_prompt(0, "")
+
+    with pytest.raises(DatabaseNotOpen):
+        db.get_message(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.get_user_messages(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.get_nth_user_message(0, 0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.add_message(0, None, "", "")
+
+    with pytest.raises(DatabaseNotOpen):
+        db.delete_message(Message(0, 0, datetime.now(), 0, "", ""))
+
+    with pytest.raises(DatabaseNotOpen):
+        db.delete_message_by_id(0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.delete_user_message_by_position(0, 0)
+
+    with pytest.raises(DatabaseNotOpen):
+        db.clear_user_messages(0)
 
 
 def test_adding_users() -> None:
