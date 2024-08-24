@@ -233,7 +233,7 @@ class BotDatabase:
     def delete_message(self, message: Message) -> None:
         # message position must be updated when a message is deleted
         messages_to_update = self._get_user_messages_ids_and_position_end_slice(message.user_id, message.position)
-        update_data = [{"message_id": id, "new_position": position + 1} for id, position in messages_to_update]
+        update_data = [{"message_id": id, "new_position": position - 1} for id, position in messages_to_update]
 
         with self.db as db:
             db.executemany(

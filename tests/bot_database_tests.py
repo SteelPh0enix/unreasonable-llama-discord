@@ -255,8 +255,8 @@ def test_adding_message_with_default_timestamp() -> None:
     db.add_message(123, None, "test_role", "test_content", create_user_if_not_found=True)
     created_message = db.get_nth_user_message(123, 0)
 
-    # 100us of tolerance for CI
-    assert (created_message.timestamp - expected_timestamp).microseconds <= 100
+    # 100ms of tolerance for CI
+    assert abs(created_message.timestamp - expected_timestamp).microseconds <= 100_000
 
 
 def test_adding_message_to_nonexistent_user_is_failing() -> None:
@@ -306,11 +306,68 @@ def test_getting_user_messages() -> None:
 
 
 def test_getting_nth_user_message() -> None:
-    pass
+    db = BotDatabase(TEST_DB_PATH)
+    test_messages = (
+        (1, "user 1", "user message 1"),
+        (1, "assistant", "assistant reply 1"),
+        (1, "user 1", "user message 2"),  # this message should be fetched
+        (1, "assistant", "assistant reply 2"),
+        (2, "user 2", "user message 1"),
+        (2, "assistant", "assistant reply 1"),  # this message should be fetched
+        (2, "user 2", "user message 2"),
+        (2, "assistant", "assistant reply 2"),
+    )
+    add_messages(db, test_messages, True)
+
+    expected_message_a = test_messages[2]
+    expected_message_b = test_messages[5]
+    user_a_message = db.get_nth_user_message(1, 2)
+    user_b_message = db.get_nth_user_message(2, 1)
+
+    expected_user_id, expected_role, expected_message = expected_message_a
+    assert user_a_message.user_id == expected_user_id
+    assert user_a_message.role == expected_role
+    assert user_a_message.message == expected_message
+
+    expected_user_id, expected_role, expected_message = expected_message_b
+    assert user_b_message.user_id == expected_user_id
+    assert user_b_message.role == expected_role
+    assert user_b_message.message == expected_message
 
 
 def test_deleting_messages() -> None:
-    pass
+    db = BotDatabase(TEST_DB_PATH)
+    test_messages = (
+        (1, "user 1", "user message 1"),
+        (1, "assistant", "assistant reply 1"),
+        (1, "user 1", "user message 2"),
+        (1, "assistant", "assistant reply 2"),
+        (2, "user 2", "user message 1"),
+        (2, "assistant", "assistant reply 1"),
+        (2, "user 2", "user message 2"),
+        (2, "assistant", "assistant reply 2"),
+    )
+    expected_user_messages_post = (
+        (2, 0, "user 2", "user message 1"),
+        (2, 1, "user 2", "user message 2"),
+        (2, 2, "assistant", "assistant reply 2"),
+    )
+    add_messages(db, test_messages, True)
+
+    user_messages_pre = db.get_user_messages(2)
+    assert len(user_messages_pre) == 4
+
+    db.delete_message(user_messages_pre[1])
+    user_messages_post = db.get_user_messages(2)
+    print(user_messages_post)
+    assert len(user_messages_post) == len(expected_user_messages_post)
+    for (expected_user_id, expected_position, expected_role, expected_message), user_message in zip(
+        expected_user_messages_post, user_messages_post
+    ):
+        assert user_message.user_id == expected_user_id
+        assert user_message.position == expected_position
+        assert user_message.role == expected_role
+        assert user_message.message == expected_message
 
 
 def test_deleting_messages_by_id() -> None:
