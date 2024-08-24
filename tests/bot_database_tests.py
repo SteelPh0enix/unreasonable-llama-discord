@@ -396,7 +396,8 @@ def test_deleting_messages_by_id() -> None:
     assert len(user_messages_pre) == 4
 
     msg_to_delete = db.get_user_messages(1)[2]
-    db.delete_message_by_id(msg_to_delete.id)
+    assert db.delete_message_by_id(msg_to_delete.id) is True
+    assert db.delete_message_by_id(0xDEADBEEF) is False
     user_messages_post = db.get_user_messages(1)
     assert len(user_messages_post) == len(expected_user_messages_post)
 
@@ -433,8 +434,10 @@ def test_deleting_user_messages_by_position() -> None:
     user_messages_pre = db.get_user_messages(1)
     assert len(user_messages_pre) == 4
 
-    db.delete_user_message_by_position(1, 1)
-    db.delete_user_message_by_position(1, 1)
+    assert db.delete_user_message_by_position(1, 1) is True
+    assert db.delete_user_message_by_position(1, 1) is True
+    assert db.delete_user_message_by_position(123, 2) is False
+    assert db.delete_user_message_by_position(2, 10) is False
     user_messages_post = db.get_user_messages(1)
     assert len(user_messages_post) == len(expected_user_messages_post)
 
