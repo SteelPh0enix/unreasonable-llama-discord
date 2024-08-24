@@ -359,8 +359,8 @@ def test_deleting_messages() -> None:
 
     db.delete_message(user_messages_pre[1])
     user_messages_post = db.get_user_messages(2)
-    print(user_messages_post)
     assert len(user_messages_post) == len(expected_user_messages_post)
+
     for (expected_user_id, expected_position, expected_role, expected_message), user_message in zip(
         expected_user_messages_post, user_messages_post
     ):
@@ -369,13 +369,85 @@ def test_deleting_messages() -> None:
         assert user_message.role == expected_role
         assert user_message.message == expected_message
 
+    # sanity check - verify other user's messages haven't been touched
+    assert len(db.get_user_messages(1)) == 4
+
 
 def test_deleting_messages_by_id() -> None:
-    pass
+    db = BotDatabase(TEST_DB_PATH)
+    test_messages = (
+        (1, "user 1", "user message 1"),
+        (1, "assistant", "assistant reply 1"),
+        (1, "user 1", "user message 2"),
+        (1, "assistant", "assistant reply 2"),
+        (2, "user 2", "user message 1"),
+        (2, "assistant", "assistant reply 1"),
+        (2, "user 2", "user message 2"),
+        (2, "assistant", "assistant reply 2"),
+    )
+    expected_user_messages_post = (
+        (1, 0, "user 1", "user message 1"),
+        (1, 1, "assistant", "assistant reply 1"),
+        (1, 2, "assistant", "assistant reply 2"),
+    )
+    add_messages(db, test_messages, True)
+
+    user_messages_pre = db.get_user_messages(1)
+    assert len(user_messages_pre) == 4
+
+    msg_to_delete = db.get_user_messages(1)[2]
+    db.delete_message_by_id(msg_to_delete.id)
+    user_messages_post = db.get_user_messages(1)
+    assert len(user_messages_post) == len(expected_user_messages_post)
+
+    for (expected_user_id, expected_position, expected_role, expected_message), user_message in zip(
+        expected_user_messages_post, user_messages_post
+    ):
+        assert user_message.user_id == expected_user_id
+        assert user_message.position == expected_position
+        assert user_message.role == expected_role
+        assert user_message.message == expected_message
+
+    # sanity check - verify other user's messages haven't been touched
+    assert len(db.get_user_messages(2)) == 4
 
 
 def test_deleting_user_messages_by_position() -> None:
-    pass
+    db = BotDatabase(TEST_DB_PATH)
+    test_messages = (
+        (1, "user 1", "user message 1"),
+        (1, "assistant", "assistant reply 1"),
+        (1, "user 1", "user message 2"),
+        (1, "assistant", "assistant reply 2"),
+        (2, "user 2", "user message 1"),
+        (2, "assistant", "assistant reply 1"),
+        (2, "user 2", "user message 2"),
+        (2, "assistant", "assistant reply 2"),
+    )
+    expected_user_messages_post = (
+        (1, 0, "user 1", "user message 1"),
+        (1, 1, "assistant", "assistant reply 2"),
+    )
+    add_messages(db, test_messages, True)
+
+    user_messages_pre = db.get_user_messages(1)
+    assert len(user_messages_pre) == 4
+
+    db.delete_user_message_by_position(1, 1)
+    db.delete_user_message_by_position(1, 1)
+    user_messages_post = db.get_user_messages(1)
+    assert len(user_messages_post) == len(expected_user_messages_post)
+
+    for (expected_user_id, expected_position, expected_role, expected_message), user_message in zip(
+        expected_user_messages_post, user_messages_post
+    ):
+        assert user_message.user_id == expected_user_id
+        assert user_message.position == expected_position
+        assert user_message.role == expected_role
+        assert user_message.message == expected_message
+
+    # sanity check - verify other user's messages haven't been touched
+    assert len(db.get_user_messages(2)) == 4
 
 
 def test_clearing_user_messages() -> None:
