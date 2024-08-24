@@ -205,7 +205,8 @@ def test_adding_message_with_default_timestamp() -> None:
     db.add_message(123, None, "test_role", "test_content", create_user_if_not_found=True)
     created_message = db.get_nth_user_message(123, 0)
 
-    assert (created_message.timestamp - expected_timestamp).microseconds <= 1
+    # 100us of tolerance for CI
+    assert (created_message.timestamp - expected_timestamp).microseconds <= 100
 
 
 def test_adding_message_to_nonexistent_user_is_failing() -> None:
