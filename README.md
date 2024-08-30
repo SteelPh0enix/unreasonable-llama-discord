@@ -42,8 +42,6 @@ Use `$llm-help` command to see the built-in help.
 
 - Discord client
     - 🟥 Handling requests for LLM inference
-        - 🟥 Message splitting for Discord-supported length
-            - 🟥 Fixing the code blocks between messages
         - 🟥 Chained responses (first message responds to user, split responds to previous message)
     - 🟥 Handling user configuration requests
         - 🟥 Printing current user configuration
@@ -55,7 +53,9 @@ Use `$llm-help` command to see the built-in help.
     - 🟩 Removing messages on user reaction
 
 - Interface between llama.cpp server and Discord client
-    - 🟥 Performing streamed LLM inference with user arguments
+    - 🟧 Performing streamed LLM inference with user arguments
+        - 🟥 Message splitting for user-defined length
+            - 🟥 Fixing the code blocks between splits
 
 ## Deployment
 

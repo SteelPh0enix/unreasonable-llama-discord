@@ -6,20 +6,80 @@ import logging
 
 import discord
 from bot_config import SteelLlamaConfig
+from llama_backend import LlamaBackend
 
 
 class SteelLlamaDiscordClient(discord.Client):
     def __init__(self, config: SteelLlamaConfig) -> None:
         self.config = config
+
+        self.backend = LlamaBackend(
+            config.llama_url if config.llama_url is not None else "",
+            config.llama_request_timeout,
+        )
+
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(intents=intents)
 
     async def on_ready(self) -> None:
+        if not self.backend.is_alive():
+            raise RuntimeError("Backend is not running or configured IP is invalid!")
+
+        model_info = self.backend.model_info()
+        logging.debug(f"Loaded model: {model_info}")
+
+        await self.change_presence(
+            activity=discord.CustomActivity(
+                f"Chat with me using {self.config.bot_prefix}{self.config.commands['inference']}! "
+                f"Currently using {model_info.model} with {model_info.n_ctx} context tokens per user."
+            )
+        )
+
         logging.info("Bot is ready!")
 
+    async def process_inference_command(self, message: str) -> None:
+        pass
+
+    async def process_help_command(self, user_id: int, subject: str | None = None) -> None:
+        pass
+
+    async def process_reset_conversation_command(self, user_id: int) -> None:
+        pass
+
+    async def process_stats_command(self, user_id: int) -> None:
+        pass
+
     async def on_message(self, message: discord.Message) -> None:
-        logging.debug(f"Message detected: {message}")
+        # ignore your own messages
+        if message.author == self.user:
+            return
+
+        # ignore messages without prefix
+        if not message.content.startswith(self.config.bot_prefix):
+            return
+
+        command_parts = message.content.lstrip(self.config.bot_prefix).split(" ", 1)
+        command_name = command_parts[0]
+        arguments = command_parts[1] if len(command_parts) > 1 else None
+
+        logging.info(
+            f"<UID:{message.author.id}|UN:{message.author.global_name}> Command detected: {command_name}, arguments: {arguments}"
+        )
+
+        if command_name == self.config.commands["inference"]:
+            if arguments is None:
+                await message.reply("*[Missing message content, ignoring inference request...]*")
+            else:
+                await self.process_inference_command(arguments)
+        elif command_name == self.config.commands["help"]:
+            await self.process_help_command(message.author.id, arguments)
+        elif command_name == self.config.commands["reset-conversation"]:
+            await self.process_reset_conversation_command(message.author.id)
+        elif command_name == self.config.commands["stats"]:
+            await self.process_stats_command(message.author.id)
+        else:
+            await message.reply(f"Unknown command: {command_name}")
 
     def should_reaction_be_handled(
         self,
