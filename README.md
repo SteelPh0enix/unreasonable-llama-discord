@@ -54,8 +54,9 @@ Use `$llm-help` command to see the built-in help.
 
 - Interface between llama.cpp server and Discord client
     - 🟧 Performing streamed LLM inference with user arguments
-        - 🟥 Message splitting for user-defined length
-            - 🟥 Fixing the code blocks between splits
+        - 🟩 Message splitting for user-defined length
+            - 🟩 Fixing the code blocks between splits
+        - 🟥 More user configuration options for inference
 
 ## Deployment
 
