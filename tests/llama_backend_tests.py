@@ -11,10 +11,10 @@ class LlamaSlot:
     model_name: str
 
 
-def find_next_separator(string: str, separators: str) -> tuple[int, str] | None:
+def find_next_separator(string: str, separators: str) -> int | None:
     for i, char in enumerate(string):
         if char in separators:
-            return i, char
+            return i
     return None
 
 
@@ -26,12 +26,11 @@ class LlamaMock:
 
     async def get_streamed_completion(self, request: LlamaCompletionRequest) -> AsyncIterator[LlamaCompletionResponse]:
         words = self.mock_response
-        separator = find_next_separator(words, " \n")
-        while separator is not None:
-            index, separator_char = separator
-            yield LlamaCompletionResponse(content=f"{words[:index]}{separator_char}", id_slot=0, stop=False)
-            words = words[index + 1 :]
-            separator = find_next_separator(words, " \n")
+        separator_index = find_next_separator(words, " \n")
+        while separator_index is not None:
+            yield LlamaCompletionResponse(content=words[: separator_index + 1], id_slot=0, stop=False)
+            words = words[separator_index + 1 :]
+            separator_index = find_next_separator(words, " \n")
         yield LlamaCompletionResponse(content=words, id_slot=0, stop=True)
 
     def is_alive(self) -> bool:
