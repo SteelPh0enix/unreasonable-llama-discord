@@ -58,6 +58,9 @@ def validate_messages(db: BotDatabase, messages: Sequence[tuple[int, datetime, i
         assert message.message == message_text
 
 
+# --------------------------------------------------------------------------------------------------
+
+
 def test_creating_empty_database() -> None:
     db = BotDatabase()
     assert not db.is_open
