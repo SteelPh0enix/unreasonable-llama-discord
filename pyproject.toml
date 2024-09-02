@@ -14,6 +14,7 @@ transformers = "^4.42.3"
 jinja2 = "^3.1.4"
 sentencepiece = "^0.2.0"
 protobuf = "^5.27.2"
+anyio = {extras = ["trio"], version = "^4.4.0"}
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.5"
