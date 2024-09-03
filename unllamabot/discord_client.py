@@ -38,16 +38,16 @@ class SteelLlamaDiscordClient(discord.Client):
 
         logging.info("Bot is ready!")
 
-    async def process_inference_command(self, message: str) -> None:
+    async def process_inference_command(self, message: discord.Message, prompt: str) -> None:
         pass
 
-    async def process_help_command(self, user_id: int, subject: str | None = None) -> None:
+    async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
+        await message.reply("this will be help when i finish it")
+
+    async def process_reset_conversation_command(self, message: discord.Message) -> None:
         pass
 
-    async def process_reset_conversation_command(self, user_id: int) -> None:
-        pass
-
-    async def process_stats_command(self, user_id: int) -> None:
+    async def process_stats_command(self, message: discord.Message) -> None:
         pass
 
     async def on_message(self, message: discord.Message) -> None:
@@ -71,13 +71,13 @@ class SteelLlamaDiscordClient(discord.Client):
             if arguments is None:
                 await message.reply("*[Missing message content, ignoring inference request...]*")
             else:
-                await self.process_inference_command(arguments)
+                await self.process_inference_command(message, arguments)
         elif command_name == self.config.commands["help"]:
-            await self.process_help_command(message.author.id, arguments)
+            await self.process_help_command(message, arguments)
         elif command_name == self.config.commands["reset-conversation"]:
-            await self.process_reset_conversation_command(message.author.id)
+            await self.process_reset_conversation_command(message)
         elif command_name == self.config.commands["stats"]:
-            await self.process_stats_command(message.author.id)
+            await self.process_stats_command(message)
         else:
             await message.reply(f"Unknown command: {command_name}")
 
