@@ -167,3 +167,6 @@ cython_debug/
 
 # UnreasonableLlama database (sqlite3)
 *.uldb
+
+# drawio backups
+*.drawio.bkp
