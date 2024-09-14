@@ -1,0 +1,298 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8" pages="2">
+  <diagram name="Main workflow" id="HbUQBnDFqHBXolvkrC3I">
+    <mxGraphModel dx="2074" dy="1196" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ahB4upGkOTFBKg_enh4w-4" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;" parent="1" source="ahB4upGkOTFBKg_enh4w-1" target="ahB4upGkOTFBKg_enh4w-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-1" value="START" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_1;whiteSpace=wrap;labelBackgroundColor=none;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="388" y="250" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-6" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;" parent="1" source="ahB4upGkOTFBKg_enh4w-3" target="ahB4upGkOTFBKg_enh4w-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-3" value="Parse CLI arguments" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="370" y="310" width="96" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-8" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;" parent="1" source="ahB4upGkOTFBKg_enh4w-5" target="ahB4upGkOTFBKg_enh4w-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-5" value="Setup logging" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="368" y="390" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-22" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-7" target="ahB4upGkOTFBKg_enh4w-28" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="347.9999999999998" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-7" value="Load configuration" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="368" y="450" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-10" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;startArrow=classic;startFill=1;endArrow=none;endFill=0;rounded=0;" parent="1" source="ahB4upGkOTFBKg_enh4w-9" target="ahB4upGkOTFBKg_enh4w-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-9" value="Configuration file" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.document2;whiteSpace=wrap;size=0.25;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;spacingBottom=8;" parent="1" vertex="1">
+          <mxGeometry x="514" y="450" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-11" value="Process&lt;br&gt;(may be described on separate page if complex enough)" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="10" y="50" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-12" value="SYMBOLS" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="170" y="10" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-13" value="Document (file/database) dependency" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.document2;whiteSpace=wrap;size=0.25;rounded=0;spacingBottom=11;" parent="1" vertex="1">
+          <mxGeometry x="20" y="120" width="170" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-14" value="Conditional branch" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;rounded=0;spacingTop=6;" parent="1" vertex="1">
+          <mxGeometry x="210" y="50" width="95" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-16" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="100" relative="1" as="geometry">
+            <mxPoint x="660" y="54.75999999999999" as="sourcePoint" />
+            <mxPoint x="805" y="54.75999999999999" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-18" value="Process flow" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ahB4upGkOTFBKg_enh4w-16" vertex="1" connectable="0">
+          <mxGeometry x="0.0733" y="-1" relative="1" as="geometry">
+            <mxPoint x="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-19" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;dashed=1;" parent="1" edge="1">
+          <mxGeometry width="100" relative="1" as="geometry">
+            <mxPoint x="662.5" y="74.75999999999999" as="sourcePoint" />
+            <mxPoint x="802.5" y="74.75999999999999" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-20" value="Dependency" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ahB4upGkOTFBKg_enh4w-19" vertex="1" connectable="0">
+          <mxGeometry x="0.1924" y="2" relative="1" as="geometry">
+            <mxPoint x="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-32" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-28" target="ahB4upGkOTFBKg_enh4w-38" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="347.9999999999998" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-28" value="Get API key from environment" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="323" y="520" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-46" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-38" target="ahB4upGkOTFBKg_enh4w-45" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-38" value="Open chat/user database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="345.25" y="575" width="147.75" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-48" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-45" target="ahB4upGkOTFBKg_enh4w-47" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-63" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-45" target="ahB4upGkOTFBKg_enh4w-62" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-45" value="Prepare llama server interface" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="327" y="640" width="181" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-55" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-47" target="ahB4upGkOTFBKg_enh4w-54" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-65" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" parent="1" source="ahB4upGkOTFBKg_enh4w-47" target="ahB4upGkOTFBKg_enh4w-64" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-47" value="Create Discord client" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="327" y="700" width="181" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-53" value="Loop" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="324" y="55" width="70" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-54" value="Handle Discord events" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="342" y="760" width="151" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-57" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;startArrow=classic;startFill=1;endArrow=none;endFill=0;rounded=0;" parent="1" source="ahB4upGkOTFBKg_enh4w-66" target="ahB4upGkOTFBKg_enh4w-38" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="464" y="525" as="sourcePoint" />
+            <mxPoint x="408" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-61" value="External service" style="shape=tape;whiteSpace=wrap;html=1;strokeWidth=2;size=0.19" parent="1" vertex="1">
+          <mxGeometry x="207.5" y="145" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-62" value="llama-server" style="shape=tape;whiteSpace=wrap;html=1;strokeWidth=2;size=0.19;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="184" y="636.25" width="100" height="37.5" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-64" value="Discord API" style="shape=tape;whiteSpace=wrap;html=1;strokeWidth=2;size=0.19;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" parent="1" vertex="1">
+          <mxGeometry x="184" y="696.25" width="100" height="37.5" as="geometry" />
+        </mxCell>
+        <mxCell id="ahB4upGkOTFBKg_enh4w-66" value="Chat/user database" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.document2;whiteSpace=wrap;size=0.25;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;spacingBottom=9;" parent="1" vertex="1">
+          <mxGeometry x="530" y="575" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="fX2AjeA0h0A_5y77IjTu-1" value="RELATIONS" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="695" y="20" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="fX2AjeA0h0A_5y77IjTu-2" value="User input" style="html=1;strokeWidth=2;shape=manualInput;whiteSpace=wrap;rounded=1;size=26;arcSize=11;spacingTop=15;" parent="1" vertex="1">
+          <mxGeometry x="319" y="100" width="70" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="mCBu46iq6FCxWbrcIIpn-1" value="Steps requiring user/chat database access" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="409" y="52.5" width="170" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCBu46iq6FCxWbrcIIpn-2" value="Steps requiring llama-server" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="409" y="100" width="170" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5xpK1pRE-sq5OhYcldF0-1" value="Steps requiring LLM formatter" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="409" y="137.5" width="171" height="35" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="IVMiF6MZkDtnGtbg78YZ" name="Inference command workflow">
+    <mxGraphModel dx="1185" dy="683" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-2" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.502;entryY=0.143;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="8zddj7WQRhCFcwlQS1N0-2" target="iAW4BtVAZz2zjT4hOFds-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="8zddj7WQRhCFcwlQS1N0-2" value="START" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.start_1;whiteSpace=wrap;labelBackgroundColor=none;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="350" y="10" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-6" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-1" target="iAW4BtVAZz2zjT4hOFds-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-1" value="User message for LLM (&lt;b&gt;user-msg&lt;/b&gt;)" style="html=1;strokeWidth=2;shape=manualInput;whiteSpace=wrap;rounded=1;size=26;arcSize=11;spacingTop=17;" parent="1" vertex="1">
+          <mxGeometry x="324" y="70" width="111.5" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-9" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" source="iAW4BtVAZz2zjT4hOFds-5" target="iAW4BtVAZz2zjT4hOFds-8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-10" value="NO" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="iAW4BtVAZz2zjT4hOFds-9" vertex="1" connectable="0">
+          <mxGeometry x="-0.0777" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xJEYLMYIa-qKgZ2lRM12-7" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" source="iAW4BtVAZz2zjT4hOFds-5" target="xJEYLMYIa-qKgZ2lRM12-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xJEYLMYIa-qKgZ2lRM12-8" value="YES" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xJEYLMYIa-qKgZ2lRM12-7" vertex="1" connectable="0">
+          <mxGeometry x="-0.3704" y="-2" relative="1" as="geometry">
+            <mxPoint x="-20" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-5" value="&lt;p style=&quot;line-height: 120%; padding-left: 20px; padding-bottom: 0px; padding-right: 20px;&quot;&gt;Message history for user exists?&lt;/p&gt;" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="311" y="190" width="138" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-12" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" source="iAW4BtVAZz2zjT4hOFds-8" target="iAW4BtVAZz2zjT4hOFds-11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-14" value="NO" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="iAW4BtVAZz2zjT4hOFds-12" vertex="1" connectable="0">
+          <mxGeometry x="0.1291" relative="1" as="geometry">
+            <mxPoint x="-6" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-16" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" source="iAW4BtVAZz2zjT4hOFds-8" target="iAW4BtVAZz2zjT4hOFds-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-17" value="YES" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="iAW4BtVAZz2zjT4hOFds-16" vertex="1" connectable="0">
+          <mxGeometry x="0.048" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-8" value="User configuration exists?" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.decision;whiteSpace=wrap;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="506" y="200" width="95" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-18" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-11" target="iAW4BtVAZz2zjT4hOFds-15" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="711" y="380" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="711" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-11" value="Create default configuration for user" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="656" y="210" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-20" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-15" target="iAW4BtVAZz2zjT4hOFds-19" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-15" value="Load user&#39;s system prompt" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="468.5" y="330" width="170" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-22" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-19" target="iAW4BtVAZz2zjT4hOFds-21" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-19" value="Create system prompt message" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="465" y="400" width="177" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-24" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-21" target="iAW4BtVAZz2zjT4hOFds-23" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-21" value="Create message history with system prompt message" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="465" y="470" width="177" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="xJEYLMYIa-qKgZ2lRM12-9" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-23" target="xJEYLMYIa-qKgZ2lRM12-6" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="440" y="570" />
+              <mxPoint x="440" y="345" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-23" value="Save message history to database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="458.5" y="550" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-3" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="xJEYLMYIa-qKgZ2lRM12-6" target="OgEmEv8k3SM7MXCykrIP-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xJEYLMYIa-qKgZ2lRM12-6" value="Load user&#39;s message history" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="220" y="330" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-16" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-2" target="OgEmEv8k3SM7MXCykrIP-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-2" value="Add &lt;b&gt;user-msg&lt;/b&gt; to message history" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="220" y="390" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-28" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-4" target="OgEmEv8k3SM7MXCykrIP-26" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-4" value="Wrap message history in LLM chat template to create prompt" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="220" y="520" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-23" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-9" target="OgEmEv8k3SM7MXCykrIP-22" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-9" value="Query the LLM for answer to generated prompt with user config" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="220" y="660" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-19" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-15" target="OgEmEv8k3SM7MXCykrIP-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-15" value="Save new message history in chat database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="220" y="450" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-30" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-22" target="OgEmEv8k3SM7MXCykrIP-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-22" value="Stream LLM response as chain of Discord responses" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;spacingTop=15;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="220" y="730" width="190" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-27" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-26" target="OgEmEv8k3SM7MXCykrIP-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-26" value="Load user&#39;s query configuration" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="220" y="590" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-32" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-29" target="OgEmEv8k3SM7MXCykrIP-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-29" value="Save full LLM response in chat database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="220" y="820" width="190" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-31" value="END" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="280" y="900" width="70" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
