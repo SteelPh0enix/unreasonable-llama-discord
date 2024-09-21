@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.8 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.8" pages="2">
   <diagram name="Main workflow" id="HbUQBnDFqHBXolvkrC3I">
-    <mxGraphModel dx="2074" dy="1196" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1728" dy="997" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -143,11 +143,17 @@
         <mxCell id="5xpK1pRE-sq5OhYcldF0-1" value="Steps requiring LLM formatter" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
           <mxGeometry x="409" y="137.5" width="171" height="35" as="geometry" />
         </mxCell>
+        <mxCell id="9u_p9MO-Bw0Imh7YGC1T-1" value="Steps requiring configuration file" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="590" y="100" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="9u_p9MO-Bw0Imh7YGC1T-2" value="Steps requiring Discord API" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="590" y="137.5" width="190" height="32.5" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
   <diagram id="IVMiF6MZkDtnGtbg78YZ" name="Inference command workflow">
-    <mxGraphModel dx="1185" dy="683" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2074" dy="1196" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -212,85 +218,74 @@
         <mxCell id="iAW4BtVAZz2zjT4hOFds-11" value="Create default configuration for user" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
           <mxGeometry x="656" y="210" width="110" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="iAW4BtVAZz2zjT4hOFds-20" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-15" target="iAW4BtVAZz2zjT4hOFds-19" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-20" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-15" target="iAW4BtVAZz2zjT4hOFds-23" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="553.5" y="400" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="iAW4BtVAZz2zjT4hOFds-15" value="Load user&#39;s system prompt" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
           <mxGeometry x="468.5" y="330" width="170" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="iAW4BtVAZz2zjT4hOFds-22" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-19" target="iAW4BtVAZz2zjT4hOFds-21" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="iAW4BtVAZz2zjT4hOFds-19" value="Create system prompt message" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="465" y="400" width="177" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="iAW4BtVAZz2zjT4hOFds-24" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-21" target="iAW4BtVAZz2zjT4hOFds-23" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="iAW4BtVAZz2zjT4hOFds-21" value="Create message history with system prompt message" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="465" y="470" width="177" height="50" as="geometry" />
-        </mxCell>
         <mxCell id="xJEYLMYIa-qKgZ2lRM12-9" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="iAW4BtVAZz2zjT4hOFds-23" target="xJEYLMYIa-qKgZ2lRM12-6" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="440" y="570" />
+              <mxPoint x="440" y="420" />
               <mxPoint x="440" y="345" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="iAW4BtVAZz2zjT4hOFds-23" value="Save message history to database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
-          <mxGeometry x="458.5" y="550" width="190" height="40" as="geometry" />
+        <mxCell id="iAW4BtVAZz2zjT4hOFds-23" value="Add system prompt message to user message history" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="458.5" y="400" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-3" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="xJEYLMYIa-qKgZ2lRM12-6" target="OgEmEv8k3SM7MXCykrIP-2" edge="1">
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="xJEYLMYIa-qKgZ2lRM12-6" target="OgEmEv8k3SM7MXCykrIP-26" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="xJEYLMYIa-qKgZ2lRM12-6" value="Load user&#39;s message history" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
           <mxGeometry x="220" y="330" width="190" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-16" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-2" target="OgEmEv8k3SM7MXCykrIP-15" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-2" value="Add &lt;b&gt;user-msg&lt;/b&gt; to message history" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
-          <mxGeometry x="220" y="390" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-28" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-4" target="OgEmEv8k3SM7MXCykrIP-26" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-4" value="Wrap message history in LLM chat template to create prompt" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
-          <mxGeometry x="220" y="520" width="190" height="40" as="geometry" />
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="440" as="sourcePoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="OgEmEv8k3SM7MXCykrIP-23" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-9" target="OgEmEv8k3SM7MXCykrIP-22" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="OgEmEv8k3SM7MXCykrIP-9" value="Query the LLM for answer to generated prompt with user config" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
-          <mxGeometry x="220" y="660" width="190" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-19" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-15" target="OgEmEv8k3SM7MXCykrIP-4" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-15" value="Save new message history in chat database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
-          <mxGeometry x="220" y="450" width="190" height="40" as="geometry" />
+          <mxGeometry x="220" y="610" width="190" height="40" as="geometry" />
         </mxCell>
         <mxCell id="OgEmEv8k3SM7MXCykrIP-30" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-22" target="OgEmEv8k3SM7MXCykrIP-29" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-22" value="Stream LLM response as chain of Discord responses" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;spacingTop=15;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
-          <mxGeometry x="220" y="730" width="190" height="60" as="geometry" />
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-22" value="Stream LLM response as chain of Discord responses" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;spacingTop=15;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry x="220" y="680" width="190" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-27" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-26" target="OgEmEv8k3SM7MXCykrIP-9" edge="1">
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-26" target="IsvIyDz4rEmmrMgiB_S9-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="OgEmEv8k3SM7MXCykrIP-26" value="Load user&#39;s query configuration" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
-          <mxGeometry x="220" y="590" width="190" height="40" as="geometry" />
+          <mxGeometry x="220" y="390" width="190" height="40" as="geometry" />
         </mxCell>
         <mxCell id="OgEmEv8k3SM7MXCykrIP-32" value="" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="OgEmEv8k3SM7MXCykrIP-29" target="OgEmEv8k3SM7MXCykrIP-31" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="OgEmEv8k3SM7MXCykrIP-29" value="Save full LLM response in chat database" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
-          <mxGeometry x="220" y="820" width="190" height="50" as="geometry" />
+        <mxCell id="OgEmEv8k3SM7MXCykrIP-29" value="Add &lt;b&gt;user-msg&lt;/b&gt; and LLM response to user&#39;s message history in&lt;span style=&quot;background-color: initial;&quot;&gt;&amp;nbsp;chat database&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="220" y="770" width="190" height="50" as="geometry" />
         </mxCell>
         <mxCell id="OgEmEv8k3SM7MXCykrIP-31" value="END" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.terminator;whiteSpace=wrap;" parent="1" vertex="1">
-          <mxGeometry x="280" y="900" width="70" height="40" as="geometry" />
+          <mxGeometry x="280" y="860" width="70" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="IsvIyDz4rEmmrMgiB_S9-2" target="IsvIyDz4rEmmrMgiB_S9-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-2" value="Add &lt;b&gt;user-msg&lt;/b&gt; to local message history" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="220" y="460" width="190" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="IsvIyDz4rEmmrMgiB_S9-3" target="OgEmEv8k3SM7MXCykrIP-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IsvIyDz4rEmmrMgiB_S9-3" value="Wrap local message history in LLM chat template to create prompt" style="rounded=0;whiteSpace=wrap;html=1;absoluteArcSize=1;arcSize=14;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="220" y="535" width="190" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
