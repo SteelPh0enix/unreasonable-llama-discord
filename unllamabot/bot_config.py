@@ -24,6 +24,7 @@ stats-cmd = "llm-stats"
 
 [bot]
 default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."
+chat-database-path = "./chats.uldb"
 
 [llama]
 # URL is optional, if not provided it will be loaded from LLAMA_CPP_SERVER_URL env variable,
@@ -51,6 +52,8 @@ class SteelLlamaConfig:
     """Timeout for llama.cpp server requests, in milliseconds."""
     llama_url: str | None
     """llama.cpp server URL, if None the LLAMA_CPP_SERVER_URL env var will be used instead."""
+    chat_database_path: str
+    """Path to bot's chats and users database"""
 
     @staticmethod
     def from_dict(config: dict[str, Any]) -> SteelLlamaConfig:
@@ -59,6 +62,7 @@ class SteelLlamaConfig:
         message_removal_reaction = config["messages"]["remove-reaction"]
         bot_prefix = config["commands"]["prefix"]
         default_system_prompt = config["bot"]["default-system-prompt"]
+        chat_database_path = config["bot"]["chat-database-path"]
         commands = {
             command_name.removesuffix("-cmd"): command
             for command_name, command in config["commands"].items()
@@ -76,6 +80,7 @@ class SteelLlamaConfig:
             commands,
             llama_request_timeout,
             llama_url,
+            chat_database_path,
         )
 
 

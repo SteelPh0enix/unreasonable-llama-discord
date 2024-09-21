@@ -12,6 +12,7 @@ stats-cmd = "llm-stats"
 
 [bot]
 default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."
+chat-database-path = "./chats.uldb"
 
 [llama]
 # URL is optional, if not provided it will be loaded from LLAMA_CPP_SERVER_URL env variable,
