@@ -23,12 +23,12 @@ jobs:
       - name: 'Check code with ruff'
         run: poetry run ruff check --no-fix --no-unsafe-fixes --statistics $(ls ./unllamabot/*.py)
       - name: 'Check code with mypy'
-        run: poetry run mypy --strict --pretty $(ls ./unllamabot/*.py)
+        run: poetry run mypy $(ls ./unllamabot/*.py)
       - name: 'Check unit tests formatting'
         run: poetry run ruff format --diff $(ls ./tests/*.py)
       - name: 'Check unit tests with ruff'
         run: poetry run ruff check --no-fix --no-unsafe-fixes --statistics $(ls ./tests/*.py)
       - name: 'Check unit tests with mypy'
-        run: poetry run mypy --strict --pretty --implicit-reexport $(ls ./tests/*.py)
+        run: poetry run mypy --implicit-reexport $(ls ./tests/*.py)
       - name: 'Run unit tests'
         run: poetry run pytest

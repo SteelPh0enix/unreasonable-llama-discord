@@ -32,6 +32,13 @@ python_files = ["*_tests.py"]
 python_functions = ["test_*"]
 pythonpath = ["."]
 
+[tool.mypy]
+strict = true
+show_error_context = true
+show_column_numbers = true
+show_error_code_links = true
+pretty = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

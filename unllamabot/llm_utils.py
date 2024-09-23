@@ -1,6 +1,7 @@
 """LLM-related utility functions and classes"""
 
-from transformers import AutoTokenizer
+# transformers are not properly typed :(
+from transformers import AutoTokenizer  # type: ignore
 from bot_database import ChatRole, Message
 
 
