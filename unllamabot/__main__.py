@@ -8,10 +8,17 @@ from pathlib import Path
 from bot_config import load_bot_configuration, create_default_bot_configuration
 
 from discord_client import SteelLlamaDiscordClient
+from unllamabot.llm_utils import LLMUtils
 
 
 def parse_script_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Unreasonable Llama Discord bot")
+
+    parser.add_argument(
+        "model_path_or_url",
+        type=str,
+        help="Path to model's repository (with chat template files)",
+    )
 
     parser.add_argument(
         "--config-file",
@@ -61,7 +68,8 @@ def main(args: argparse.Namespace) -> None:
         )
         sys.exit(3)
 
-    client = SteelLlamaDiscordClient(bot_config)
+    llm_utils = LLMUtils(args.model_path_or_url)
+    client = SteelLlamaDiscordClient(bot_config, llm_utils)
     client.run(api_key)
 
 
