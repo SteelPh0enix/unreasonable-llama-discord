@@ -5,6 +5,7 @@ from typing import Sequence
 import pytest
 from unllamabot.bot_database import (
     BotDatabase,
+    ChatRole,
     DatabaseNotOpen,
     Message,
     UserDoesNotExist,
@@ -32,12 +33,12 @@ def validate_users(db: BotDatabase, users: Sequence[tuple[int, str | None]], sys
         assert user.system_prompt == (prompt if prompt is not None else system_prompt)
 
 
-def add_messages(db: BotDatabase, messages: Sequence[tuple[int, str, str]], create_user: bool = False) -> None:
+def add_messages(db: BotDatabase, messages: Sequence[tuple[int, ChatRole, str]], create_user: bool = False) -> None:
     for user_id, role, message in messages:
         db.add_message(user_id, None, role, message, create_user)
 
 
-def validate_messages_ignoring_timestamps(db: BotDatabase, messages: Sequence[tuple[int, int, str, str]]) -> None:
+def validate_messages_ignoring_timestamps(db: BotDatabase, messages: Sequence[tuple[int, int, ChatRole, str]]) -> None:
     for user_id, position, role, message_text in messages:
         message = db.get_nth_user_message(user_id, position)
         assert message is not None
@@ -47,7 +48,7 @@ def validate_messages_ignoring_timestamps(db: BotDatabase, messages: Sequence[tu
         assert message.message == message_text
 
 
-def validate_messages(db: BotDatabase, messages: Sequence[tuple[int, datetime, int, str, str]]) -> None:
+def validate_messages(db: BotDatabase, messages: Sequence[tuple[int, datetime, int, ChatRole, str]]) -> None:
     for user_id, timestamp, position, role, message_text in messages:
         message = db.get_nth_user_message(user_id, position)
         assert message is not None
@@ -89,6 +90,9 @@ def test_functions_throw_on_unopened_database() -> None:
         db.add_user(0)
 
     with pytest.raises(DatabaseNotOpen):
+        db.get_or_create_user(0)
+
+    with pytest.raises(DatabaseNotOpen):
         db.delete_user(0)
 
     with pytest.raises(DatabaseNotOpen):
@@ -110,7 +114,7 @@ def test_functions_throw_on_unopened_database() -> None:
         db.add_message(0, None, "", "")
 
     with pytest.raises(DatabaseNotOpen):
-        db.delete_message(Message(0, 0, datetime.now(), 0, "", ""))
+        db.delete_message(Message(0, 0, datetime.now(), 0, ChatRole.SYSTEM, ""))
 
     with pytest.raises(DatabaseNotOpen):
         db.delete_message_by_id(0)
@@ -150,6 +154,26 @@ def test_adding_users_with_custom_default_prompt() -> None:
 
     create_users(db, test_users_data)
     validate_users(db, test_users_data, TEST_SYSTEM_PROMPT_DEFAULT)
+
+
+def test_get_or_create_user() -> None:
+    db = BotDatabase(TEST_DB_PATH, TEST_SYSTEM_PROMPT_DEFAULT)
+    db.add_user(1, "Custom system prompt")
+    db.add_user(2, "Different custom system prompt")
+
+    user_existing_a = db.get_or_create_user(1)
+    user_existing_b = db.get_or_create_user(2, "This should be ignored")
+    user_created = db.get_or_create_user(3)
+    user_created_custom_prompt = db.get_or_create_user(4, "Another custom system prompt")
+
+    assert user_existing_a.id == 1
+    assert user_existing_a.system_prompt == "Custom system prompt"
+    assert user_existing_b.id == 2
+    assert user_existing_b.system_prompt == "Different custom system prompt"
+    assert user_created.id == 3
+    assert user_created.system_prompt == TEST_SYSTEM_PROMPT_DEFAULT
+    assert user_created_custom_prompt.id == 4
+    assert user_created_custom_prompt.system_prompt == "Another custom system prompt"
 
 
 def test_changing_global_default_system_prompt() -> None:
@@ -202,10 +226,10 @@ def test_deleting_users() -> None:
         (456, TEST_SYSTEM_PROMPT_B),
     )
     test_messages = (
-        (1, "user", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user", "user message 2"),
-        (1, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),
+        (1, ChatRole.BOT, "assistant reply 2"),
     )
 
     create_users(db, test_users_data)
@@ -230,8 +254,8 @@ def test_adding_messages() -> None:
     expected_timestamp_a = datetime(year=2222, month=11, day=22)
     expected_timestamp_b = datetime(year=2223, month=11, day=22)
     expected_messages = (
-        (123, expected_timestamp_a, 0, "user", "user request"),
-        (123, expected_timestamp_b, 1, "assistant", "assistant answer"),
+        (123, expected_timestamp_a, 0, ChatRole.USER, "user request"),
+        (123, expected_timestamp_b, 1, ChatRole.BOT, "assistant answer"),
     )
     for user_id, timestamp, _, role, content in expected_messages:
         db.add_message(user_id, timestamp, role, content, create_user_if_not_found=True)
@@ -243,8 +267,8 @@ def test_adding_message_and_creating_user() -> None:
     expected_timestamp_a = datetime(year=2222, month=11, day=22)
     expected_timestamp_b = datetime(year=2223, month=11, day=22)
     expected_messages = (
-        (123, expected_timestamp_a, 0, "user", "user request"),
-        (123, expected_timestamp_b, 1, "assistant", "assistant answer"),
+        (123, expected_timestamp_a, 0, ChatRole.USER, "user request"),
+        (123, expected_timestamp_b, 1, ChatRole.BOT, "assistant answer"),
     )
 
     assert not db.user_exists(123)
@@ -258,7 +282,7 @@ def test_adding_message_with_default_timestamp() -> None:
     db = BotDatabase(TEST_DB_PATH)
 
     expected_timestamp = datetime.now()
-    db.add_message(123, None, "test_role", "test_content", create_user_if_not_found=True)
+    db.add_message(123, None, ChatRole.SYSTEM, "test_content", create_user_if_not_found=True)
     created_message = db.get_nth_user_message(123, 0)
 
     # 100ms of tolerance for CI
@@ -273,7 +297,7 @@ def test_adding_message_to_nonexistent_user() -> None:
         db.add_message(
             1,
             expected_timestamp,
-            "test_role",
+            ChatRole.SYSTEM,
             "test_message_content",
             create_user_if_not_found=False,
         )
@@ -282,21 +306,21 @@ def test_adding_message_to_nonexistent_user() -> None:
 def test_getting_user_messages() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_messages = (
-        (1, "user 1", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user 1", "user message 2"),
-        (1, "assistant", "assistant reply 2"),
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),
+        (1, ChatRole.BOT, "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
 
     expected_user_messages = (
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
 
     add_messages(db, test_messages, True)
@@ -314,14 +338,14 @@ def test_getting_user_messages() -> None:
 def test_getting_nth_user_message() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_messages = (
-        (1, "user 1", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user 1", "user message 2"),  # this message should be fetched
-        (1, "assistant", "assistant reply 2"),
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),  # this message should be fetched
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),  # this message should be fetched
+        (1, ChatRole.BOT, "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),  # this message should be fetched
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
     add_messages(db, test_messages, True)
 
@@ -346,19 +370,19 @@ def test_getting_nth_user_message() -> None:
 def test_deleting_messages() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_messages = (
-        (1, "user 1", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user 1", "user message 2"),
-        (1, "assistant", "assistant reply 2"),
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),
+        (1, ChatRole.BOT, "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
     expected_user_messages_post = (
-        (2, 0, "user 2", "user message 1"),
-        (2, 1, "user 2", "user message 2"),
-        (2, 2, "assistant", "assistant reply 2"),
+        (2, 0, ChatRole.USER, "user message 1"),
+        (2, 1, ChatRole.USER, "user message 2"),
+        (2, 2, ChatRole.BOT, "assistant reply 2"),
     )
     add_messages(db, test_messages, True)
 
@@ -384,19 +408,19 @@ def test_deleting_messages() -> None:
 def test_deleting_messages_by_id() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_messages = (
-        (1, "user 1", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user 1", "user message 2"),
-        (1, "assistant", "assistant reply 2"),
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),
+        (1, ChatRole.BOT, "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
     expected_user_messages_post = (
-        (1, 0, "user 1", "user message 1"),
-        (1, 1, "assistant", "assistant reply 1"),
-        (1, 2, "assistant", "assistant reply 2"),
+        (1, 0, ChatRole.USER, "user message 1"),
+        (1, 1, ChatRole.BOT, "assistant reply 1"),
+        (1, 2, ChatRole.BOT, "assistant reply 2"),
     )
     add_messages(db, test_messages, True)
 
@@ -424,18 +448,18 @@ def test_deleting_messages_by_id() -> None:
 def test_deleting_user_messages_by_position() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_messages = (
-        (1, "user 1", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user 1", "user message 2"),
-        (1, "assistant", "assistant reply 2"),
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),
+        (1, ChatRole.BOT, "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
     expected_user_messages_post = (
-        (1, 0, "user 1", "user message 1"),
-        (1, 1, "assistant", "assistant reply 2"),
+        (1, 0, ChatRole.USER, "user message 1"),
+        (1, 1, ChatRole.BOT, "assistant reply 2"),
     )
     add_messages(db, test_messages, True)
 
@@ -464,14 +488,14 @@ def test_deleting_user_messages_by_position() -> None:
 def test_clearing_user_messages() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_messages = (
-        (1, "user 1", "user message 1"),
-        (1, "assistant", "assistant reply 1"),
-        (1, "user 1", "user message 2"),
-        (1, "assistant", "assistant reply 2"),
-        (2, "user 2", "user message 1"),
-        (2, "assistant", "assistant reply 1"),
-        (2, "user 2", "user message 2"),
-        (2, "assistant", "assistant reply 2"),
+        (1, ChatRole.USER, "user message 1"),
+        (1, ChatRole.BOT, "assistant reply 1"),
+        (1, ChatRole.USER, "user message 2"),
+        (1, ChatRole.BOT, "assistant reply 2"),
+        (2, ChatRole.USER, "user message 1"),
+        (2, ChatRole.BOT, "assistant reply 1"),
+        (2, ChatRole.USER, "user message 2"),
+        (2, ChatRole.BOT, "assistant reply 2"),
     )
 
     add_messages(db, test_messages, True)

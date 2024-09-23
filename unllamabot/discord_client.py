@@ -6,13 +6,16 @@ import logging
 
 import discord
 from bot_config import SteelLlamaConfig
+from bot_database import BotDatabase
 from llama_backend import LlamaBackend
+from llm_utils import LLMUtils
 
 
 class SteelLlamaDiscordClient(discord.Client):
-    def __init__(self, config: SteelLlamaConfig) -> None:
+    def __init__(self, config: SteelLlamaConfig, llm_utils: LLMUtils) -> None:
         self.config = config
-
+        self.llm_utils = llm_utils
+        self.db = BotDatabase(config.chat_database_path, config.default_system_prompt)
         self.backend = LlamaBackend(
             config.llama_url if config.llama_url is not None else "",
             config.llama_request_timeout,
@@ -38,8 +41,14 @@ class SteelLlamaDiscordClient(discord.Client):
 
         logging.info("Bot is ready!")
 
-    async def process_inference_command(self, message: discord.Message, prompt: str) -> None:
-        pass
+    async def process_inference_command(self, message: discord.Message, prompt: str | None) -> None:
+        if prompt is None:
+            prefixed_inference_command = f"{self.config.bot_prefix}{self.config.commands['inference']}"
+            prefixed_help_command = f"{self.config.bot_prefix}{self.config.commands['help']}"
+            await message.reply(
+                f"*Usage: `{prefixed_inference_command} [message]`, for example `{prefixed_inference_command} what's the highest mountain on earth?`*\n"
+                f"*Use `{prefixed_help_command}` for details about the bot commands.*"
+            )
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
         await message.reply("this will be help when i finish it")
@@ -68,10 +77,7 @@ class SteelLlamaDiscordClient(discord.Client):
         )
 
         if command_name == self.config.commands["inference"]:
-            if arguments is None:
-                await message.reply("*[Missing message content, ignoring inference request...]*")
-            else:
-                await self.process_inference_command(message, arguments)
+            await self.process_inference_command(message, arguments)
         elif command_name == self.config.commands["help"]:
             await self.process_help_command(message, arguments)
         elif command_name == self.config.commands["reset-conversation"]:

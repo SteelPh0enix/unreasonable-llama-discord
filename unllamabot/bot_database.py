@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
+from enum import StrEnum
 
 import logging
 
@@ -35,13 +36,19 @@ class User:
     system_prompt: str
 
 
+class ChatRole(StrEnum):
+    SYSTEM = "system"
+    USER = "user"
+    BOT = "assistant"
+
+
 @dataclass
 class Message:
     id: int
     user_id: int
     timestamp: datetime
     position: int
-    role: str
+    role: ChatRole
     message: str
 
 
@@ -108,6 +115,13 @@ class BotDatabase:
         return None
 
     @_requires_open_db
+    def get_or_create_user(self, user_id: int, system_prompt: str | None = None) -> User:
+        """Returns an user. If it doesn't exist, it's created with provided configuration."""
+        if not self.user_exists(user_id):
+            self.add_user(user_id, system_prompt)
+        return self.get_user(user_id)  # type: ignore
+
+    @_requires_open_db
     def add_user(self, user_id: int, system_prompt: str | None = None) -> bool:
         """Returns True if adding was successful, False if user already exists.
         If system prompt is not provided, default one will be used."""
@@ -161,6 +175,11 @@ class BotDatabase:
             )
 
     @_requires_open_db
+    def user_has_messages(self, user_id: int) -> bool:
+        query = self.db.execute("SELECT EXISTS(SELECT 1 FROM messages WHERE user_id == ?)", (user_id,))
+        return bool(query.fetchone()[0] == 1)
+
+    @_requires_open_db
     def get_message(self, message_id: int) -> Message | None:
         query = self.db.execute(
             "SELECT user_id, timestamp, position, role, message FROM messages WHERE id == ?",
@@ -174,7 +193,7 @@ class BotDatabase:
                 user_id,
                 datetime.fromisoformat(timestamp),
                 position,
-                role,
+                ChatRole(role),
                 message,
             )
         return None
@@ -195,7 +214,7 @@ class BotDatabase:
                     user_id,
                     datetime.fromisoformat(timestamp),
                     position,
-                    role,
+                    ChatRole(role),
                     message,
                 )
             )
@@ -216,7 +235,7 @@ class BotDatabase:
         self,
         user_id: int,
         timestamp: datetime | None,
-        role: str,
+        role: ChatRole,
         message: str,
         create_user_if_not_found: bool = True,
     ) -> None:
@@ -235,7 +254,7 @@ class BotDatabase:
         with self.db as db:
             db.execute(
                 "INSERT INTO messages(user_id, timestamp, position, role, message) VALUES (?, ?, ?, ?, ?)",
-                (user_id, timestamp, next_message_position, role, message),
+                (user_id, timestamp, next_message_position, str(role), message),
             )
 
     @_requires_open_db

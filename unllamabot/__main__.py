@@ -8,7 +8,7 @@ from pathlib import Path
 from bot_config import load_bot_configuration, create_default_bot_configuration
 
 from discord_client import SteelLlamaDiscordClient
-from unllamabot.llm_utils import LLMUtils
+from llm_utils import LLMUtils
 
 
 def parse_script_arguments() -> argparse.Namespace:
