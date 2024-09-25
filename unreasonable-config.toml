@@ -3,16 +3,33 @@ edit-cooldown-ms = 750
 length-limit = 1990
 remove-reaction = "💀"
 
-[commands]
-prefix = "$"
-inference-cmd = "llm"
-help-cmd = "llm-help"
-reset-conversation-cmd = "llm-reset"
-stats-cmd = "llm-stats"
+
+[commands.inference]
+cmd = "llm"
+requires_admin = false
+
+[commands.help]
+cmd = "llm-help"
+requires_admin = false
+
+[commands.reset-conversation]
+cmd = "llm-reset"
+requires_admin = false
+
+[commands.stats]
+cmd = "llm-stats"
+requires_admin = false
+
+[commands.refresh]
+cmd = "llm-refresh"
+requires_admin = true
 
 [bot]
+prefix = "$"
 default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."
 chat-database-path = "./chats.uldb"
+# add user IDs of bot administrators here, those users can call admin commands.
+admins-id = [283282938471383041]
 
 [llama]
 # URL is optional, if not provided it will be loaded from LLAMA_CPP_SERVER_URL env variable,
