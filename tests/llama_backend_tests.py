@@ -1,9 +1,10 @@
-import pytest
 from collections.abc import AsyncIterator
-
-from unreasonable_llama import LlamaCompletionResponse
-from unllamabot.llama_backend import LlamaBackend, LlamaCompletionRequest
 from dataclasses import dataclass
+
+import pytest
+from unreasonable_llama import LlamaCompletionResponse
+
+from unllamabot.llama_backend import LlamaBackend, LlamaCompletionRequest, LlamaResponseChunk
 
 
 @dataclass
@@ -59,44 +60,51 @@ def test_is_alive() -> None:
 
 def test_model_props() -> None:
     backend = get_mocked_backend()
-    mock_model_info = backend.model_props()
-    assert mock_model_info.model_name == "dummy model"  # type: ignore
+    mock_model_props = backend.model_props()
+    assert mock_model_props.model_name == "dummy model"  # type: ignore
 
 
 @pytest.mark.anyio
 async def test_get_llm_response() -> None:
     backend = get_mocked_backend()
     expected_response = "This is a dummy response"
-    expected_responses = ["This ", "is ", "a ", "dummy ", "response"]
-    actual_responses = []
+    expected_chunks = ["This ", "is ", "a ", "dummy ", "response"]
+    received_chunks = []
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response in backend.get_llm_response(""):
-        actual_responses.append(response)
+        received_chunks.append(response)
 
-    assert expected_responses == actual_responses
+    assert expected_chunks == received_chunks
 
 
 @pytest.mark.anyio
 async def test_get_buffered_llm_response_single_message() -> None:
     backend = get_mocked_backend()
     expected_response = "This is a dummy response"
-    expected_responses = ["This ", "is ", "a ", "dummy ", "response"]
-    actual_responses = []
-    messages = []
-    response = ""
+    expected_chunks = ["This ", "is ", "a ", "dummy ", "response"]
+    received_chunks = []
+    received_messages = []
+    received_response = ""
+    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 100):
-        actual_responses.append(response_chunk.chunk)
-        if response_chunk.end_of_message:
-            messages.append(response_chunk.message)
-            response = response_chunk.response
+        if previous_chunk is not None and response_chunk.next_message:
+            received_messages.append(previous_chunk.message)
 
-    assert expected_responses == actual_responses
-    assert len(messages) == 1
-    assert messages[0] == expected_response
-    assert response == expected_response
+        if response_chunk.last_chunk:
+            received_messages.append(response_chunk.message)
+            received_response = response_chunk.response
+
+        if response_chunk.chunk is not None:
+            received_chunks.append(response_chunk.chunk)
+        previous_chunk = response_chunk
+
+    assert expected_chunks == received_chunks
+    assert len(received_messages) == 1
+    assert received_messages[0] == expected_response
+    assert received_response == expected_response
 
 
 @pytest.mark.anyio
@@ -104,22 +112,28 @@ async def test_get_buffered_llm_response_single_split_message() -> None:
     backend = get_mocked_backend()
     expected_response = "This is a dummy, but also pretty long response"
     expected_messages = ["This is a dummy, but also", "pretty long response"]
-    expected_responses = ["This ", "is ", "a ", "dummy, ", "but ", "also ", "pretty ", "long ", "response"]
-    actual_responses = []
-    messages = []
-    response = ""
+    expected_chunks = ["This ", "is ", "a ", "dummy, ", "but ", "also ", "pretty ", "long ", "response"]
+    received_chunks = []
+    received_messages = []
+    received_response = ""
+    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 30):
-        if chunk := response_chunk.chunk:
-            actual_responses.append(chunk)
-        if response_chunk.end_of_message:
-            messages.append(response_chunk.message)
-            response = response_chunk.response
+        if previous_chunk is not None and response_chunk.next_message:
+            received_messages.append(previous_chunk.message)
 
-    assert actual_responses == expected_responses
-    assert messages == expected_messages
-    assert response == expected_response
+        if response_chunk.last_chunk:
+            received_messages.append(response_chunk.message)
+            received_response = response_chunk.response
+
+        if response_chunk.chunk is not None:
+            received_chunks.append(response_chunk.chunk)
+        previous_chunk = response_chunk
+
+    assert received_chunks == expected_chunks
+    assert received_messages == expected_messages
+    assert received_response == expected_response
 
 
 @pytest.mark.anyio
@@ -127,22 +141,28 @@ async def test_get_buffered_llm_response_multiple_split_message() -> None:
     backend = get_mocked_backend()
     expected_response = "This is a dummy, but also pretty long response"
     expected_messages = ["This is a", "dummy, but", "also pretty", "long response"]
-    expected_responses = ["This ", "is ", "a ", "dummy, ", "but ", "also ", "pretty ", "long ", "response"]
-    actual_responses = []
-    messages = []
-    response = ""
+    expected_chunks = ["This ", "is ", "a ", "dummy, ", "but ", "also ", "pretty ", "long ", "response"]
+    received_chunks = []
+    received_messages = []
+    received_response = ""
+    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 15):
-        if chunk := response_chunk.chunk:
-            actual_responses.append(chunk)
-        if response_chunk.end_of_message:
-            messages.append(response_chunk.message)
-            response = response_chunk.response
+        if previous_chunk is not None and response_chunk.next_message:
+            received_messages.append(previous_chunk.message)
 
-    assert actual_responses == expected_responses
-    assert messages == expected_messages
-    assert response == expected_response
+        if response_chunk.last_chunk:
+            received_messages.append(response_chunk.message)
+            received_response = response_chunk.response
+
+        if response_chunk.chunk is not None:
+            received_chunks.append(response_chunk.chunk)
+        previous_chunk = response_chunk
+
+    assert received_chunks == expected_chunks
+    assert received_messages == expected_messages
+    assert received_response == expected_response
 
 
 @pytest.mark.anyio
@@ -158,7 +178,7 @@ Let's see if this thing works properly.
         "This is a dummy, but also pretty long response.\nIt also contains content separated by newlines.",
         "That's a long message!\nLet's see if this thing works properly.",
     ]
-    expected_responses = [
+    expected_chunks = [
         "This ",
         "is ",
         "a ",
@@ -187,21 +207,27 @@ Let's see if this thing works properly.
         "works ",
         "properly.",
     ]
-    actual_responses = []
-    messages = []
-    response = ""
+    received_chunks = []
+    received_messages = []
+    received_response = ""
+    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 100):
-        if chunk := response_chunk.chunk:
-            actual_responses.append(chunk)
-        if response_chunk.end_of_message:
-            messages.append(response_chunk.message)
-            response = response_chunk.response
+        if previous_chunk is not None and response_chunk.next_message:
+            received_messages.append(previous_chunk.message)
 
-    assert actual_responses == expected_responses
-    assert messages == expected_messages
-    assert response == expected_response
+        if response_chunk.last_chunk:
+            received_messages.append(response_chunk.message)
+            received_response = response_chunk.response
+
+        if response_chunk.chunk is not None:
+            received_chunks.append(response_chunk.chunk)
+        previous_chunk = response_chunk
+
+    assert received_chunks == expected_chunks
+    assert received_messages == expected_messages
+    assert received_response == expected_response
 
 
 @pytest.mark.anyio
@@ -243,10 +269,16 @@ Here you go!
     response = ""
 
     backend.llama.mock_response = expected_response  # type: ignore
+    previous_chunk = None
     async for response_chunk in backend.get_buffered_llm_response("", 100):
-        if response_chunk.end_of_message:
+        if previous_chunk is not None and response_chunk.next_message:
+            messages.append(previous_chunk.message)
+
+        if response_chunk.last_chunk:
             messages.append(response_chunk.message)
             response = response_chunk.response
+
+        previous_chunk = response_chunk
 
     assert messages == expected_messages
     assert response == expected_response
