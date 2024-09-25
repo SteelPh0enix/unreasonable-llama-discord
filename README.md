@@ -18,11 +18,45 @@ For example:
 
 Use `$llm-help` command to see the built-in help.
 
-### TODO/WIP
+### Progress (v0.2)
 
-- Move conversation history to *really* persistent database (sqlite)
-- Add option to set system prompt for the user
-- Add automatic conversation trimming for detected context length
+🟥 feature not implemented yet
+🟧 feature in progress
+🟩 feature done
+
+- Core app
+    - 🟩 CLI arguments parsing (via argparser)
+    - 🟩 Configuration loading (via bot_config)
+    - 🟩 Creating default configuration, if nonexistent
+    - 🟧 Starting up Discord client with required config and dependencies
+
+- Global bot configuration
+    - 🟩 Storing and reading config from file (TOML <-> JSON (dict))
+    - 🟩 Utilities for creating default configuration file
+
+- Bot database
+    - 🟧 Storing user configuration
+        - 🟩 Storing/fetching custom prompts
+        - 🟥 Storing/fetching custom generation settings
+    - 🟩 Storing/fetching user conversations
+
+- Discord client
+    - 🟥 Handling requests for LLM inference
+        - 🟥 Chained responses (first message responds to user, split responds to previous message)
+    - 🟥 Handling user configuration requests
+        - 🟥 Printing current user configuration
+        - 🟥 Setting user config variables
+    - 🟥 Printing help
+        - 🟥 Printing bot's help
+        - 🟥 Printing LLM parameters help
+        - 🟥 Printing commands list
+    - 🟩 Removing messages on user reaction
+
+- Interface between llama.cpp server and Discord client
+    - 🟧 Performing streamed LLM inference with user arguments
+        - 🟩 Message splitting for user-defined length
+            - 🟩 Fixing the code blocks between splits
+        - 🟥 More user configuration options for inference
 
 ## Deployment
 
