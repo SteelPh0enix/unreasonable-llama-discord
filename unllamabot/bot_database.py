@@ -172,6 +172,10 @@ class BotDatabase:
                 "UPDATE users SET system_prompt = ? WHERE id == ?",
                 (new_system_prompt, user_id),
             )
+            db.execute(
+                "UPDATE messages SET message = ? WHERE user_id == ? AND role == ?",
+                (new_system_prompt, user_id, str(ChatRole.SYSTEM)),
+            )
 
     @_requires_open_db
     def user_has_messages(self, user_id: int) -> bool:

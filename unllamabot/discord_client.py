@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
+from typing import Callable
 
 import discord
 from bot_config import BotConfig
@@ -15,6 +16,17 @@ from llm_utils import LLMUtils
 
 def current_time_ms() -> int:
     return round(time.time() * 1000)
+
+
+def requires_admin_permission(func: Callable) -> Callable:  # type: ignore
+    async def wrapper(self, message: discord.Message, *args, **kwargs):  # type: ignore
+        if message.author.id not in self.config.admins_id:
+            await message.reply("You do not have permission to use this command.")
+            return
+        else:
+            await func(self, message, *args, **kwargs)
+
+    return wrapper
 
 
 class SteelLlamaDiscordClient(discord.Client):
@@ -31,22 +43,24 @@ class SteelLlamaDiscordClient(discord.Client):
         intents.message_content = True
         super().__init__(intents=intents)
 
-    async def on_ready(self) -> None:
-        if not self.backend.is_alive():
-            raise RuntimeError("Backend is not running or configured IP is invalid!")
-
+    async def update_bot_presence(self) -> None:
         model_props = self.backend.model_props()
         model_name = Path(model_props.default_generation_settings.model).name
         model_context_length = model_props.default_generation_settings.n_ctx
         logging.info(f"Loaded model: {model_name}")
 
         presence_string = (
-            f"Chat with me using {self.config.bot_prefix}{self.config.commands['inference']}! "
+            f"Chat with me using `{self.config.bot_prefix}{self.config.commands['inference'].command}`! "
             + f"Currently using {model_name} with context of {model_context_length} tokens per user."
         )
         logging.info(f"Bot presence: {presence_string}")
         await self.change_presence(activity=discord.CustomActivity(presence_string))
         logging.info("Bot is ready!")
+
+    async def on_ready(self) -> None:
+        if not self.backend.is_alive():
+            raise RuntimeError("Backend is not running or configured IP is invalid!")
+        await self.update_bot_presence()
 
     async def process_inference_command(self, message: discord.Message, prompt: str | None) -> None:
         if prompt is None:
@@ -105,14 +119,18 @@ The bot remembers your conversations and allows you to configure the LLM in some
     * `{self.config.bot_prefix}{self.config.commands["help"].command} [subject (optional)]` - show help
     * `{self.config.bot_prefix}{self.config.commands["reset-conversation"].command}` - clear your conversation history and start a new one
     * `{self.config.bot_prefix}{self.config.commands["stats"].command}` - show some stats of your conversation
-## Available help subjects:
+    * `{self.config.bot_prefix}{self.config.commands["get-param"].command}` - show your LLM parameters/configuration
+    * `{self.config.bot_prefix}{self.config.commands["set-param"].command}` - set your LLM parameters/configuration
+## Additional help subjects:
     * `model` - show model details
+    * `params` - show available LLM parameters and their description
     * `admin` - show admin commands"""
             case "model":
                 props = self.backend.model_props()
                 model_info = props.default_generation_settings
                 help_content = f"""# Currently loaded model: {Path(model_info.model).name}
 **Context length**: {model_info.n_ctx} tokens
+**Default system prompt**: `{self.config.default_system_prompt}`
 **Samplers**: {model_info.samplers}
 ## Parameters
 **Top-K**: {model_info.top_k}
@@ -127,6 +145,16 @@ The bot remembers your conversations and allows you to configure the LLM in some
             case "admin":
                 help_content = f"""# Admin commands
 * `{self.config.bot_prefix}{self.config.commands["refresh"].command}` - refresh llama.cpp props"""
+            case "params":
+                help_content = f"""# Configurable LLM parameters
+* `system-prompt`: System prompt for the LLM. Defines the behaviour of LLM and the character of it's responses.
+## Checking and modifying LLM parameters
+All the parameters listed above are stored on per-user basis, therefore you are able to modify them to your liking.
+To check current value of the parameter, use `{self.config.bot_prefix}{self.config.commands["get-param"].command} [parameter-name]` command, for example, `{self.config.bot_prefix}{self.config.commands["get-param"].command} system-prompt`.
+You can also use `{self.config.bot_prefix}{self.config.commands["get-param"].command}` to list the values of all parameters.
+To change the value of the parameter, use `{self.config.bot_prefix}{self.config.commands["set-param"].command} [parameter-name] [new value]`, for example `{self.config.bot_prefix}{self.config.commands["set-param"].command} system-prompt This is my new system prompt!`.
+The change is immediate, resetting the conversation is not required.
+"""
 
         await message.reply(content=help_content)
 
@@ -149,9 +177,48 @@ The bot remembers your conversations and allows you to configure the LLM in some
         context_percent_used = (prompt_length_tokens / context_length) * 100
         await message.reply(
             f"""Messages in chat history (including system prompt): {len(messages)}
-Current prompt length (tokens): {prompt_length_tokens}/{context_length} ({context_percent_used:.2f}% used)
+Current prompt length (tokens): {prompt_length_tokens}/{context_length} ({context_percent_used:.2f}% of available context used)
 Current prompt length (characters): {prompt_length_chars}"""
         )
+
+    @requires_admin_permission
+    async def process_refresh_command(self, message: discord.Message) -> None:
+        await self.update_bot_presence()
+        await message.reply("Bot's metadata refreshed!")
+
+    async def process_get_param(self, message: discord.Message, param: str | None = None) -> None:
+        user = self.db.get_or_create_user(message.author.id)
+        response_content = ""
+        match param:
+            case "system-prompt":
+                response_content = f"Your system prompt is `{user.system_prompt}`"
+            case None:
+                response_content = f"* **System prompt**: `{user.system_prompt}`"
+            case _:
+                response_content = f"Unknown parameter: {param}"
+
+        await message.reply(content=response_content)
+
+    async def process_set_param(self, message: discord.Message, params: str | None) -> None:
+        if params is None:
+            await message.reply(content="Missing parameter name and new value!")
+            return
+
+        try:
+            param_name, new_param_value = params.split(sep=" ", maxsplit=1)
+        except ValueError:
+            await message.reply(content="Missing value of the parameter!")
+            return
+
+        user = self.db.get_or_create_user(message.author.id)
+        match param_name:
+            case "system-prompt":
+                self.db.change_user_system_prompt(user.id, new_param_value)
+                await message.reply(
+                    content=f"Updated system prompt!\nOld: `{user.system_prompt}`\nNew: `{new_param_value}`"
+                )
+            case _:
+                await message.reply(content=f"Unknown parameter: {param_name}")
 
     async def on_message(self, message: discord.Message) -> None:
         # ignore your own messages
@@ -178,6 +245,12 @@ Current prompt length (characters): {prompt_length_chars}"""
             await self.process_reset_conversation_command(message)
         elif command_name == self.config.commands["stats"].command:
             await self.process_stats_command(message)
+        elif command_name == self.config.commands["refresh"].command:
+            await self.process_refresh_command(message)
+        elif command_name == self.config.commands["get-param"].command:
+            await self.process_get_param(message, arguments)
+        elif command_name == self.config.commands["set-param"].command:
+            await self.process_set_param(message, arguments)
         else:
             await message.reply(f"Unknown command: {command_name}")
 
