@@ -14,12 +14,6 @@ def parse_script_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Unreasonable Llama Discord bot")
 
     parser.add_argument(
-        "model_path_or_url",
-        type=str,
-        help="Path to model's repository (with chat template files)",
-    )
-
-    parser.add_argument(
         "--config-file",
         type=str,
         default="unreasonable-config.toml",

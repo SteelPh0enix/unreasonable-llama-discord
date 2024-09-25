@@ -2,8 +2,9 @@
 
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
+from typing import cast
 
-from unreasonable_llama import LlamaCompletionRequest, LlamaProps, UnreasonableLlama
+from unreasonable_llama import LlamaCompletionRequest, LlamaProps, LlamaTokenizeRequest, UnreasonableLlama
 
 
 @dataclass
@@ -118,3 +119,7 @@ class LlamaBackend:
                     new_message=True,
                 )
                 message = next_message
+
+    def tokenize(self, message: str) -> list[int]:
+        request = LlamaTokenizeRequest(message)
+        return cast(list[int], self.llama.tokenize(request))

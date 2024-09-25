@@ -74,7 +74,6 @@ class SteelLlamaDiscordClient(discord.Client):
         full_response = None
 
         logging.debug(f"Processing inference command for user {user_id}...")
-        logging.debug(f"Messages: {messages}")
         logging.debug(f"LLM prompt: {llm_prompt}")
 
         async for chunk in self.backend.get_buffered_llm_response(llm_prompt, self.config.message_length_limit):
@@ -95,13 +94,49 @@ class SteelLlamaDiscordClient(discord.Client):
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
         help_content = f"*No help available for selected subject. Try {self.config.bot_prefix}{self.config.commands['help']} for list of subjects and generic help.*"
+        match subject:
+            case None:
+                help_content = f"""## This is [UnreasonableLlama](https://pypi.org/project/unreasonable-llama/)-based Discord bot.
+It allows you to converse with an LLM hosted via llama.cpp.
+The bot remembers your conversations and allows you to configure the LLM in some degree.
+
+### Available commands:
+    * {self.config.bot_prefix}{self.config.commands["inference"]} [message] - chat with the LLM
+    * {self.config.bot_prefix}{self.config.commands["help"]} [subject (optional)] - show help
+    * {self.config.bot_prefix}{self.config.commands["reset-conversation"]} - clear your conversation history and start a new one
+    * {self.config.bot_prefix}{self.config.commands["stats"]} - show some stats of your conversation
+
+### Available help subjects:
+    * `model` - show model details"""
+            case "model":
+                props = self.backend.model_props()
+                model_info = props.default_generation_settings
+                help_content = f"""Currently loaded model: {model_info.model}
+Context length: {model_info.n_ctx}
+Samplers: {model_info.samplers}
+Temperature: {model_info.temperature}
+Top k: {model_info.top_k}
+Top p: {model_info.top_p}
+Typical p: {model_info.typical_p}
+Mirostat type: {model_info.mirostat}
+    * Eta: {model_info.mirostat_eta}
+    * Tau: {model_info.mirostat_tau}"""
         await message.reply(content=help_content)
 
     async def process_reset_conversation_command(self, message: discord.Message) -> None:
-        pass
+        self.db.clear_user_messages(message.author.id)
+        await message.reply("Message history cleared!")
 
     async def process_stats_command(self, message: discord.Message) -> None:
-        pass
+        user_id = message.author.id
+        messages = self.db.get_user_messages(user_id)
+        llm_prompt = self.llm_utils.format_messages_into_chat(messages)
+        tokenized_prompt = self.backend.tokenize(llm_prompt)
+        await message.reply(
+            f"""Messages in chat history (including system prompt): {len(messages)}
+Prompt length (tokens): {len(tokenized_prompt)}
+Prompt length (characters): {len(llm_prompt)}"""
+        )
 
     async def on_message(self, message: discord.Message) -> None:
         # ignore your own messages
