@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from pathlib import Path
 
 import discord
@@ -12,15 +13,19 @@ from llama_backend import LlamaBackend
 from llm_utils import LLMUtils
 
 
+def current_time_ms() -> int:
+    return round(time.time() * 1000)
+
+
 class SteelLlamaDiscordClient(discord.Client):
-    def __init__(self, config: SteelLlamaConfig, llm_utils: LLMUtils) -> None:
+    def __init__(self, config: SteelLlamaConfig) -> None:
         self.config = config
-        self.llm_utils = llm_utils
         self.db = BotDatabase(config.chat_database_path, config.default_system_prompt)
         self.backend = LlamaBackend(
             config.llama_url if config.llama_url is not None else "",
             config.llama_request_timeout,
         )
+        self.llm_utils = LLMUtils(self.backend)
 
         intents = discord.Intents.default()
         intents.message_content = True
@@ -31,8 +36,8 @@ class SteelLlamaDiscordClient(discord.Client):
             raise RuntimeError("Backend is not running or configured IP is invalid!")
 
         model_props = self.backend.model_props()
-        model_name = Path(model_props.default_generation_settings.model).name
-        model_context_length = model_props.default_generation_settings.n_ctx
+        model_name = Path(model_props.default_generation_settings["model"]).name
+        model_context_length = model_props.default_generation_settings["n_ctx"]
         logging.debug(f"Loaded model: {model_name}")
 
         await self.change_presence(
@@ -59,9 +64,34 @@ class SteelLlamaDiscordClient(discord.Client):
         if not self.db.user_has_messages(user_id):
             self.db.add_message(user_id, ChatRole.SYSTEM, user.system_prompt)
 
-        # messages = self.db.get_user_messages(user_id)
-        # completion_message = self.llm_utils.format_messages_into_chat(messages)
         self.db.add_message(user_id, ChatRole.USER, prompt)
+        messages = self.db.get_user_messages(user_id)
+        llm_prompt = self.llm_utils.format_messages_into_chat(messages)
+
+        # This will be a placeholder, LLM windup can take a while.
+        reply_message = await message.reply("*Generating response, please wait...*")
+        last_update_time = current_time_ms()
+        full_response = None
+
+        logging.debug(f"Processing inference command for user {user_id}...")
+        logging.debug(f"Messages: {messages}")
+        logging.debug(f"LLM prompt: {llm_prompt}")
+
+        async for chunk in self.backend.get_buffered_llm_response(llm_prompt, self.config.message_length_limit):
+            logging.debug(f"Received response chunk: {chunk}")
+            if chunk.new_message:
+                reply_message = await reply_message.reply(content=chunk.message)
+            else:
+                if current_time_ms() - last_update_time >= self.config.message_edit_cooldown:
+                    reply_message = await reply_message.edit(content=chunk.message)
+                    last_update_time = current_time_ms()
+
+            if chunk.end_of_response:
+                reply_message = await reply_message.edit(content=chunk.message)
+                last_update_time = current_time_ms()
+                full_response = chunk.response
+
+        self.db.add_message(user_id, ChatRole.BOT, full_response)
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
         await message.reply("this will be help when i finish it")

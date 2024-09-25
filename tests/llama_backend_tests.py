@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import pytest
 from unreasonable_llama import LlamaCompletionResponse
 
-from unllamabot.llama_backend import LlamaBackend, LlamaCompletionRequest, LlamaResponseChunk
+from unllamabot.llama_backend import LlamaBackend, LlamaCompletionRequest
 
 
 @dataclass
@@ -86,20 +86,18 @@ async def test_get_buffered_llm_response_single_message() -> None:
     received_chunks = []
     received_messages = []
     received_response = ""
-    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 100):
-        if previous_chunk is not None and response_chunk.next_message:
-            received_messages.append(previous_chunk.message)
+        if response_chunk.end_of_message:
+            received_messages.append(response_chunk.message)
 
-        if response_chunk.last_chunk:
+        if response_chunk.end_of_response:
             received_messages.append(response_chunk.message)
             received_response = response_chunk.response
 
         if response_chunk.chunk is not None:
             received_chunks.append(response_chunk.chunk)
-        previous_chunk = response_chunk
 
     assert expected_chunks == received_chunks
     assert len(received_messages) == 1
@@ -116,20 +114,18 @@ async def test_get_buffered_llm_response_single_split_message() -> None:
     received_chunks = []
     received_messages = []
     received_response = ""
-    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 30):
-        if previous_chunk is not None and response_chunk.next_message:
-            received_messages.append(previous_chunk.message)
+        if response_chunk.end_of_message:
+            received_messages.append(response_chunk.message)
 
-        if response_chunk.last_chunk:
+        if response_chunk.end_of_response:
             received_messages.append(response_chunk.message)
             received_response = response_chunk.response
 
         if response_chunk.chunk is not None:
             received_chunks.append(response_chunk.chunk)
-        previous_chunk = response_chunk
 
     assert received_chunks == expected_chunks
     assert received_messages == expected_messages
@@ -145,20 +141,18 @@ async def test_get_buffered_llm_response_multiple_split_message() -> None:
     received_chunks = []
     received_messages = []
     received_response = ""
-    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 15):
-        if previous_chunk is not None and response_chunk.next_message:
-            received_messages.append(previous_chunk.message)
+        if response_chunk.end_of_message:
+            received_messages.append(response_chunk.message)
 
-        if response_chunk.last_chunk:
+        if response_chunk.end_of_response:
             received_messages.append(response_chunk.message)
             received_response = response_chunk.response
 
         if response_chunk.chunk is not None:
             received_chunks.append(response_chunk.chunk)
-        previous_chunk = response_chunk
 
     assert received_chunks == expected_chunks
     assert received_messages == expected_messages
@@ -210,20 +204,18 @@ Let's see if this thing works properly.
     received_chunks = []
     received_messages = []
     received_response = ""
-    previous_chunk: None | LlamaResponseChunk = None
 
     backend.llama.mock_response = expected_response  # type: ignore
     async for response_chunk in backend.get_buffered_llm_response("", 100):
-        if previous_chunk is not None and response_chunk.next_message:
-            received_messages.append(previous_chunk.message)
+        if response_chunk.end_of_message:
+            received_messages.append(response_chunk.message)
 
-        if response_chunk.last_chunk:
+        if response_chunk.end_of_response:
             received_messages.append(response_chunk.message)
             received_response = response_chunk.response
 
         if response_chunk.chunk is not None:
             received_chunks.append(response_chunk.chunk)
-        previous_chunk = response_chunk
 
     assert received_chunks == expected_chunks
     assert received_messages == expected_messages
@@ -265,20 +257,17 @@ if __name__ == '__main__':
 Here you go!
         """.strip(),
     ]
-    messages = []
-    response = ""
+    received_messages = []
+    received_response = ""
 
     backend.llama.mock_response = expected_response  # type: ignore
-    previous_chunk = None
     async for response_chunk in backend.get_buffered_llm_response("", 100):
-        if previous_chunk is not None and response_chunk.next_message:
-            messages.append(previous_chunk.message)
+        if response_chunk.end_of_message:
+            received_messages.append(response_chunk.message)
 
-        if response_chunk.last_chunk:
-            messages.append(response_chunk.message)
-            response = response_chunk.response
+        if response_chunk.end_of_response:
+            received_messages.append(response_chunk.message)
+            received_response = response_chunk.response
 
-        previous_chunk = response_chunk
-
-    assert messages == expected_messages
-    assert response == expected_response
+    assert received_messages == expected_messages
+    assert received_response == expected_response

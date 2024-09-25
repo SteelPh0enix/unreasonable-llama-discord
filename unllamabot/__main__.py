@@ -8,7 +8,6 @@ from pathlib import Path
 
 from bot_config import create_default_bot_configuration, load_bot_configuration
 from discord_client import SteelLlamaDiscordClient
-from llm_utils import LLMUtils
 
 
 def parse_script_arguments() -> argparse.Namespace:
@@ -68,8 +67,7 @@ def main(args: argparse.Namespace) -> None:
         )
         sys.exit(3)
 
-    llm_utils = LLMUtils(args.model_path_or_url)
-    client = SteelLlamaDiscordClient(bot_config, llm_utils)
+    client = SteelLlamaDiscordClient(bot_config)
     client.run(api_key)
 
 
