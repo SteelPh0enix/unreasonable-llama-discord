@@ -2,21 +2,22 @@
 
 Discord bot plugged directly to a locally hosted LLM!
 
+[![Code validation & unit tests](https://github.com/SteelPh0enix/unreasonable-llama-discord/actions/workflows/check-code.yml/badge.svg)](https://github.com/SteelPh0enix/unreasonable-llama-discord/actions/workflows/check-code.yml)
+
 ## Description
 
 This bot is basically a Discord front-end for llama.cpp built-in server.
-At this moment, it responds to a single command - `$llm`, which triggers inference of the prompt following it.
-For example:
 
 ![example response](./pics/example_response.png)
 
 ## Features
 
-- Chat-like conversations with LLM (with persistent memory)
-- Shows informations about currently used model
-- Supports any `huggingface.co` model compatible with `transformers` library for tokenization.
+- Chatting with LLM, with persistent chat memory
+- Message history management
+- System prompt and inference parameters customization
+- Rich bot customization options
 
-Use `$llm-help` command to see the built-in help.
+Use `$llm-help` command to bot's help.
 
 ### Progress (v0.2)
 
@@ -41,22 +42,22 @@ Use `$llm-help` command to see the built-in help.
     - 🟩 Storing/fetching user conversations
 
 - Discord client
-    - 🟥 Handling requests for LLM inference
-        - 🟥 Chained responses (first message responds to user, split responds to previous message)
+    - 🟩 Handling requests for LLM inference
+        - 🟩 Chained responses (first message responds to user, split responds to previous message)
     - 🟥 Handling user configuration requests
         - 🟥 Printing current user configuration
-        - 🟥 Setting user config variables
-    - 🟥 Printing help
-        - 🟥 Printing bot's help
+        - 🟥 Setting user configuration
+    - 🟧 Printing help
+        - 🟩 Printing bot's help
         - 🟥 Printing LLM parameters help
-        - 🟥 Printing commands list
+        - 🟩 Printing commands list
     - 🟩 Removing messages on user reaction
 
 - Interface between llama.cpp server and Discord client
-    - 🟧 Performing streamed LLM inference with user arguments
+    - 🟩 Performing streamed LLM inference with user arguments
         - 🟩 Message splitting for user-defined length
             - 🟩 Fixing the code blocks between splits
-        - 🟥 More user configuration options for inference
+        - 🟥 Handling user configuration options for inference
 
 ## Deployment
 
@@ -80,13 +81,7 @@ cd unreasonable-llama-discord
 poetry install # must be done once to create virtualenv and set up dependencies for the bot
 export LLAMA_CPP_SERVER_URL="http://llama-ip:llama-port/"
 export UNREASONABLE_LLAMA_DISCORD_API_KEY="MyAPIKey"
-poetry run python . [path/link to original huggingface model repository]
+poetry run python unllamabot
 ```
-
-where `[path/link to original huggingface model repository]` is either
-* Short-hand (like `meta-llama/Meta-Llama-3-8B-Instruct`) or full (like `https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct`) URL to huggingface repository with original (**not quantized!**) model
-* Path to downloaded repository with model's `tokernizer_config.json` (and possibly other tokenizer-related files, model itself is NOT required)
-
-This is required for the bot to properly format the messages into the chat format.
 
 The bot should perform a single request to `/health` endpoint at the start, and if everything is configured correctly it should show loaded model's path in the activity and start responding to queries.
