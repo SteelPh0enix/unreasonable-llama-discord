@@ -10,18 +10,15 @@ package-mode = false
 python = "^3.12"
 discord-py = "^2.4.0"
 unreasonable-llama = "^0.3.0"
-transformers = "^4.42.3"
 jinja2 = "^3.1.4"
-sentencepiece = "^0.2.0"
-protobuf = "^5.27.2"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.5.5"
-ruff-lsp = "^0.0.54"
-mypy = "^1.11.0"
+ruff = "^0.6.7"
+ruff-lsp = "^0.0.57"
+mypy = "^1.11.2"
 pre-commit = "^3.8.0"
-pytest = "^8.3.2"
-anyio = {extras = ["trio"], version = "^4.4.0"}
+pytest = "^8.3.3"
+anyio = {extras = ["trio"], version = "^4.6.0"}
 
 [tool.ruff]
 line-length = 120
