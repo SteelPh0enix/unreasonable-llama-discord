@@ -121,6 +121,7 @@ The bot remembers your conversations and allows you to configure the LLM in some
     * `{self.config.bot_prefix}{self.config.commands["stats"].command}` - show some stats of your conversation
     * `{self.config.bot_prefix}{self.config.commands["get-param"].command}` - show your LLM parameters/configuration
     * `{self.config.bot_prefix}{self.config.commands["set-param"].command}` - set your LLM parameters/configuration
+    * `{self.config.bot_prefix}{self.config.commands["reset-param"].command}` - Reset your LLM parameter to default value
 ## Additional help subjects:
     * `model` - show model details
     * `params` - show available LLM parameters and their description
@@ -154,6 +155,7 @@ To check current value of the parameter, use `{self.config.bot_prefix}{self.conf
 You can also use `{self.config.bot_prefix}{self.config.commands["get-param"].command}` to list the values of all parameters.
 To change the value of the parameter, use `{self.config.bot_prefix}{self.config.commands["set-param"].command} [parameter-name] [new value]`, for example `{self.config.bot_prefix}{self.config.commands["set-param"].command} system-prompt This is my new system prompt!`.
 The change is immediate, resetting the conversation is not required.
+You can use `{self.config.bot_prefix}{self.config.commands["reset-param"].command}` to reset the parameter it's default value.
 """
 
         await message.reply(content=help_content)
@@ -220,6 +222,17 @@ Current prompt length (characters): {prompt_length_chars}"""
             case _:
                 await message.reply(content=f"Unknown parameter: {param_name}")
 
+    async def process_reset_param(self, message: discord.Message, param: str | None) -> None:
+        if param is None:
+            await message.reply(content="Missing parameter name!")
+            return
+
+        match param:
+            case "system-prompt":
+                await self.process_set_param(message, f"system-prompt {self.config.default_system_prompt}")
+            case _:
+                await message.reply(content=f"Unknown parameter: {param}")
+
     async def on_message(self, message: discord.Message) -> None:
         # ignore your own messages
         if message.author == self.user:
@@ -251,6 +264,8 @@ Current prompt length (characters): {prompt_length_chars}"""
             await self.process_get_param(message, arguments)
         elif command_name == self.config.commands["set-param"].command:
             await self.process_set_param(message, arguments)
+        elif command_name == self.config.commands["reset-param"].command:
+            await self.process_reset_param(message, arguments)
         else:
             await message.reply(f"Unknown command: {command_name}")
 

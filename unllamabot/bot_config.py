@@ -43,6 +43,10 @@ requires_admin = false
 cmd = "llm-get-param"
 requires_admin = false
 
+[commands.reset-param]
+cmd = "llm-reset-param"
+requires_admin = false
+
 [bot]
 prefix = "$"
 default-system-prompt = "You are a helpful AI assistant. Assist the user best to your ability."
