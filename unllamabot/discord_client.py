@@ -36,8 +36,8 @@ class SteelLlamaDiscordClient(discord.Client):
             raise RuntimeError("Backend is not running or configured IP is invalid!")
 
         model_props = self.backend.model_props()
-        model_name = Path(model_props.default_generation_settings["model"]).name
-        model_context_length = model_props.default_generation_settings["n_ctx"]
+        model_name = Path(model_props.default_generation_settings.model).name
+        model_context_length = model_props.default_generation_settings.n_ctx
         logging.debug(f"Loaded model: {model_name}")
 
         await self.change_presence(
@@ -94,7 +94,8 @@ class SteelLlamaDiscordClient(discord.Client):
         self.db.add_message(user_id, ChatRole.BOT, full_response)
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
-        await message.reply("this will be help when i finish it")
+        help_content = f"*No help available for selected subject. Try {self.config.bot_prefix}{self.config.commands['help']} for list of subjects and generic help.*"
+        await message.reply(content=help_content)
 
     async def process_reset_conversation_command(self, message: discord.Message) -> None:
         pass

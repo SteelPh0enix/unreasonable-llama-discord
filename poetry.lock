@@ -1098,17 +1098,17 @@ files = [
 
 [[package]]
 name = "unreasonable-llama"
-version = "0.3.0"
+version = "0.3.1"
 description = "HTTP API bindings for llama.cpp built-in server"
 optional = false
 python-versions = "<4.0,>=3.12"
 files = [
-    {file = "unreasonable_llama-0.3.0-py3-none-any.whl", hash = "sha256:e007b32900ec1f6043d71236289343201920e0561df82c1c6553ff2dd0574418"},
-    {file = "unreasonable_llama-0.3.0.tar.gz", hash = "sha256:2239013fa65f84ad39cdb5cdc422ff00eec311dc5b3f55107fb280f5d3b3e53f"},
+    {file = "unreasonable_llama-0.3.1-py3-none-any.whl", hash = "sha256:d947a08e5fa7f9bda58f1f80188d9e9c579b8a11cec2c00215f61f41e66f8ef0"},
+    {file = "unreasonable_llama-0.3.1.tar.gz", hash = "sha256:c0c93d0e56ed45c486e37b37ced31cc93205633d1d595305ffaf93a3db329624"},
 ]
 
 [package.dependencies]
-httpx = ">=0.27.0,<0.28.0"
+httpx = ">=0.27.2,<0.28.0"
 
 [[package]]
 name = "virtualenv"
@@ -1238,4 +1238,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "b993937523d3467321bf6c764f75c1e54c8fb4a9fe73eb13a1b9608a23101aab"
+content-hash = "68b87a6fce7100c39f5fa9b6d629a34811f2f366f5ee86aaacc5ea1f1937947d"
