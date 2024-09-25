@@ -114,13 +114,15 @@ The bot remembers your conversations and allows you to configure the LLM in some
                 help_content = f"""Currently loaded model: {model_info.model}
 Context length: {model_info.n_ctx}
 Samplers: {model_info.samplers}
-Temperature: {model_info.temperature}
 Top k: {model_info.top_k}
-Top p: {model_info.top_p}
+Tfs z: {model_info.tfs_z}
 Typical p: {model_info.typical_p}
+Top p: {model_info.top_p}
+Min p: {model_info.min_p}
+Temperature: {model_info.temperature}
 Mirostat type: {model_info.mirostat}
-    * Eta: {model_info.mirostat_eta}
-    * Tau: {model_info.mirostat_tau}"""
+Mirostat Eta: {model_info.mirostat_eta}
+Mirostat Tau: {model_info.mirostat_tau}"""
         await message.reply(content=help_content)
 
     async def process_reset_conversation_command(self, message: discord.Message) -> None:
@@ -130,12 +132,20 @@ Mirostat type: {model_info.mirostat}
     async def process_stats_command(self, message: discord.Message) -> None:
         user_id = message.author.id
         messages = self.db.get_user_messages(user_id)
+        if len(messages) == 0:
+            await message.reply("Your chat history doesn't exist!")
+            return
+
         llm_prompt = self.llm_utils.format_messages_into_chat(messages)
         tokenized_prompt = self.backend.tokenize(llm_prompt)
+        context_length = self.backend.model_props().default_generation_settings.n_ctx
+        prompt_length_tokens = len(tokenized_prompt)
+        prompt_length_chars = len(llm_prompt)
+        context_percent_used = (prompt_length_tokens / context_length) * 100
         await message.reply(
             f"""Messages in chat history (including system prompt): {len(messages)}
-Prompt length (tokens): {len(tokenized_prompt)}
-Prompt length (characters): {len(llm_prompt)}"""
+Current prompt length (tokens): {prompt_length_tokens}/{context_length} ({context_percent_used:.2f}% used)
+Current prompt length (characters): {prompt_length_chars}"""
         )
 
     async def on_message(self, message: discord.Message) -> None:
