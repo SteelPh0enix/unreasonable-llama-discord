@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class LlamaSlot:
+class LlamaProps:
     model_name: str
 
 
@@ -28,16 +28,16 @@ class LlamaMock:
         words = self.mock_response
         separator_index = find_next_separator(words, " \n")
         while separator_index is not None:
-            yield LlamaCompletionResponse(content=words[: separator_index + 1], id_slot=0, stop=False)
+            yield LlamaCompletionResponse(content=words[: separator_index + 1], id_slot=0, stop=False, index=0)
             words = words[separator_index + 1 :]
             separator_index = find_next_separator(words, " \n")
-        yield LlamaCompletionResponse(content=words, id_slot=0, stop=True)
+        yield LlamaCompletionResponse(content=words, id_slot=0, stop=True, index=0)
 
     def is_alive(self) -> bool:
         return self.mock_is_alive
 
-    def slots(self) -> list[LlamaSlot]:
-        return [LlamaSlot("dummy model")]
+    def props(self) -> LlamaProps:
+        return LlamaProps(model_name="dummy model")
 
 
 def get_mocked_backend(timeout: int = 10000) -> LlamaBackend:
@@ -57,9 +57,9 @@ def test_is_alive() -> None:
     assert backend.is_alive()
 
 
-def test_model_info() -> None:
+def test_model_props() -> None:
     backend = get_mocked_backend()
-    mock_model_info = backend.model_info()
+    mock_model_info = backend.model_props()
     assert mock_model_info.model_name == "dummy model"  # type: ignore
 
 

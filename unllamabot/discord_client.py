@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import discord
 from bot_config import SteelLlamaConfig
-from bot_database import BotDatabase
+from bot_database import BotDatabase, ChatRole
 from llama_backend import LlamaBackend
 from llm_utils import LLMUtils
 
@@ -29,13 +30,15 @@ class SteelLlamaDiscordClient(discord.Client):
         if not self.backend.is_alive():
             raise RuntimeError("Backend is not running or configured IP is invalid!")
 
-        model_info = self.backend.model_info()
-        logging.debug(f"Loaded model: {model_info}")
+        model_props = self.backend.model_props()
+        model_name = Path(model_props.default_generation_settings.model).name
+        model_context_length = model_props.default_generation_settings.n_ctx
+        logging.debug(f"Loaded model: {model_name}")
 
         await self.change_presence(
             activity=discord.CustomActivity(
                 f"Chat with me using {self.config.bot_prefix}{self.config.commands['inference']}! "
-                f"Currently using {model_info.model} with {model_info.n_ctx} context tokens per user."
+                f"Currently using {model_name} with context of {model_context_length} tokens per user."
             )
         )
 
@@ -49,6 +52,16 @@ class SteelLlamaDiscordClient(discord.Client):
                 f"*Usage: `{prefixed_inference_command} [message]`, for example `{prefixed_inference_command} what's the highest mountain on earth?`*\n"
                 f"*Use `{prefixed_help_command}` for details about the bot commands.*"
             )
+            return
+
+        user_id = message.author.id
+        user = self.db.get_or_create_user(user_id)
+        if not self.db.user_has_messages(user_id):
+            self.db.add_message(user_id, ChatRole.SYSTEM, user.system_prompt)
+
+        # messages = self.db.get_user_messages(user_id)
+        # completion_message = self.llm_utils.format_messages_into_chat(messages)
+        self.db.add_message(user_id, ChatRole.USER, prompt)
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
         await message.reply("this will be help when i finish it")

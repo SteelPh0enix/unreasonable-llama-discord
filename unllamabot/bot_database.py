@@ -1,13 +1,12 @@
 """Utilities for interacting with database containing user conversations and preferences"""
 
+import logging
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 from pathlib import Path
 from typing import Callable
-from enum import StrEnum
-
-import logging
 
 
 class DatabaseAlreadyOpen(Exception):
@@ -234,9 +233,9 @@ class BotDatabase:
     def add_message(
         self,
         user_id: int,
-        timestamp: datetime | None,
         role: ChatRole,
         message: str,
+        timestamp: datetime | None = None,
         create_user_if_not_found: bool = True,
     ) -> None:
         if not self.user_exists(user_id):

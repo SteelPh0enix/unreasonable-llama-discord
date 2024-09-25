@@ -1,9 +1,9 @@
 """llama.cpp server support"""
 
 from collections.abc import AsyncIterator
-from unreasonable_llama import LlamaCompletionRequest, LlamaSlot, UnreasonableLlama
-
 from dataclasses import dataclass
+
+from unreasonable_llama import LlamaCompletionRequest, LlamaProps, UnreasonableLlama
 
 
 @dataclass
@@ -64,10 +64,10 @@ class LlamaBackend:
         self.llama = UnreasonableLlama(server_url, request_timeout)
 
     def is_alive(self) -> bool:
-        return bool(self.llama.is_alive())
+        return self.llama.is_alive()
 
-    def model_info(self) -> LlamaSlot:
-        return self.llama.slots()[0]
+    def model_props(self) -> LlamaProps:
+        return self.llama.props()
 
     async def get_llm_response(
         self,

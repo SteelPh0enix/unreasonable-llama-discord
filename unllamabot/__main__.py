@@ -5,8 +5,8 @@ import logging
 import os
 import sys
 from pathlib import Path
-from bot_config import load_bot_configuration, create_default_bot_configuration
 
+from bot_config import create_default_bot_configuration, load_bot_configuration
 from discord_client import SteelLlamaDiscordClient
 from llm_utils import LLMUtils
 

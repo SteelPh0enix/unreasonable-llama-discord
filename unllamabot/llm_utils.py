@@ -1,26 +1,19 @@
 """LLM-related utility functions and classes"""
 
-# transformers are not properly typed :(
-from transformers import AutoTokenizer  # type: ignore
 from bot_database import ChatRole, Message
+from jinja2 import Template
+from llama_backend import LlamaBackend
 
 
 class LLMUtils:
-    def __init__(self, model_path_or_url: str) -> None:
-        self.tokenizer = AutoTokenizer.from_pretrained(model_path_or_url)
+    def __init__(self, backend: LlamaBackend) -> None:
+        self.backend = backend
 
     def format_messages_into_chat(self, messages: list[Message]) -> str:
-        conversation = [{"role": msg.role, "content": msg.message} for msg in messages]
-        last_message = messages[-1]
-
-        add_generation_prompt = last_message.role == ChatRole.USER
-        continue_generation = last_message.role == ChatRole.BOT
-
-        return str(
-            self.tokenizer.apply_chat_template(
-                conversation,
-                tokenize=False,
-                add_generation_prompt=add_generation_prompt,
-                continue_final_message=continue_generation,
-            )
-        )
+        model_props = self.backend.model_props()
+        chat_template = Template(model_props.chat_template)
+        template_args = {
+            "add_generation_prompt": messages[-1].role == ChatRole.USER,
+            "messages": [{"role": str(message.role), "content": message.message} for message in messages],
+        }
+        return chat_template.render(template_args)

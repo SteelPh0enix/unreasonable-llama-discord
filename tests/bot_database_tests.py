@@ -35,7 +35,7 @@ def validate_users(db: BotDatabase, users: Sequence[tuple[int, str | None]], sys
 
 def add_messages(db: BotDatabase, messages: Sequence[tuple[int, ChatRole, str]], create_user: bool = False) -> None:
     for user_id, role, message in messages:
-        db.add_message(user_id, None, role, message, create_user)
+        db.add_message(user_id, role, message, create_user_if_not_found=create_user)
 
 
 def validate_messages_ignoring_timestamps(db: BotDatabase, messages: Sequence[tuple[int, int, ChatRole, str]]) -> None:
@@ -111,7 +111,7 @@ def test_functions_throw_on_unopened_database() -> None:
         db.get_nth_user_message(0, 0)
 
     with pytest.raises(DatabaseNotOpen):
-        db.add_message(0, None, "", "")
+        db.add_message(0, "", "")
 
     with pytest.raises(DatabaseNotOpen):
         db.delete_message(Message(0, 0, datetime.now(), 0, ChatRole.SYSTEM, ""))
@@ -258,7 +258,7 @@ def test_adding_messages() -> None:
         (123, expected_timestamp_b, 1, ChatRole.BOT, "assistant answer"),
     )
     for user_id, timestamp, _, role, content in expected_messages:
-        db.add_message(user_id, timestamp, role, content, create_user_if_not_found=True)
+        db.add_message(user_id, role, content, timestamp=timestamp, create_user_if_not_found=True)
     validate_messages(db, expected_messages)
 
 
@@ -273,7 +273,7 @@ def test_adding_message_and_creating_user() -> None:
 
     assert not db.user_exists(123)
     for user_id, timestamp, _, role, content in expected_messages:
-        db.add_message(user_id, timestamp, role, content, create_user_if_not_found=True)
+        db.add_message(user_id, role, content, timestamp=timestamp, create_user_if_not_found=True)
     assert db.user_exists(123)
     validate_messages(db, expected_messages)
 
@@ -282,7 +282,7 @@ def test_adding_message_with_default_timestamp() -> None:
     db = BotDatabase(TEST_DB_PATH)
 
     expected_timestamp = datetime.now()
-    db.add_message(123, None, ChatRole.SYSTEM, "test_content", create_user_if_not_found=True)
+    db.add_message(123, ChatRole.SYSTEM, "test_content", create_user_if_not_found=True)
     created_message = db.get_nth_user_message(123, 0)
 
     # 100ms of tolerance for CI
@@ -296,9 +296,9 @@ def test_adding_message_to_nonexistent_user() -> None:
     with pytest.raises(UserDoesNotExist):
         db.add_message(
             1,
-            expected_timestamp,
             ChatRole.SYSTEM,
             "test_message_content",
+            timestamp=expected_timestamp,
             create_user_if_not_found=False,
         )
 
