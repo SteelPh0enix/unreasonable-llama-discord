@@ -69,6 +69,9 @@ class BotCommand:
     requires_admin: bool
     """If True, command can be executed only by user with ID from admins-id list."""
 
+    def __str__(self) -> str:
+        return self.command
+
 
 @dataclass(frozen=True)
 class BotConfig:
