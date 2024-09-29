@@ -122,6 +122,8 @@ The bot remembers your conversations and allows you to configure the LLM in some
     * `{self.config.bot_prefix}{self.config.commands["get-param"].command}` - show your LLM parameters/configuration
     * `{self.config.bot_prefix}{self.config.commands["set-param"].command}` - set your LLM parameters/configuration
     * `{self.config.bot_prefix}{self.config.commands["reset-param"].command}` - Reset your LLM parameter to default value
+
+When chatting directly with the bot, the messages are automatically passed as argument for `{self.config.bot_prefix}{self.config.commands["inference"].command}` command, if they don't match any other command.
 ## Additional help subjects:
     * `model` - show model details
     * `params` - show available LLM parameters and their description
@@ -238,8 +240,10 @@ Current prompt length (characters): {prompt_length_chars}"""
         if message.author == self.user:
             return
 
-        # ignore messages without prefix
-        if not message.content.startswith(self.config.bot_prefix):
+        # ignore messages without prefix, unless in DMs
+        msg_starts_with_prefix = message.content.startswith(self.config.bot_prefix)
+        msg_is_dm = isinstance(message.channel, discord.DMChannel)
+        if not msg_starts_with_prefix and not msg_is_dm:
             return
 
         command_parts = message.content.lstrip(self.config.bot_prefix).split(" ", 1)
@@ -267,7 +271,10 @@ Current prompt length (characters): {prompt_length_chars}"""
         elif command_name == self.config.commands["reset-param"].command:
             await self.process_reset_param(message, arguments)
         else:
-            await message.reply(f"Unknown command: {command_name}")
+            if msg_is_dm:
+                await self.process_inference_command(message, arguments)
+            else:
+                await message.reply(f"Unknown command: {command_name}")
 
     def should_reaction_be_handled(
         self,
