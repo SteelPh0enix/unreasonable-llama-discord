@@ -119,9 +119,9 @@ The bot remembers your conversations and allows you to configure the LLM in some
     * `{self.config.bot_prefix}{self.config.commands["help"].command} [subject (optional)]` - show help
     * `{self.config.bot_prefix}{self.config.commands["reset-conversation"].command}` - clear your conversation history and start a new one
     * `{self.config.bot_prefix}{self.config.commands["stats"].command}` - show some stats of your conversation
-    * `{self.config.bot_prefix}{self.config.commands["get-param"].command}` - show your LLM parameters/configuration
-    * `{self.config.bot_prefix}{self.config.commands["set-param"].command}` - set your LLM parameters/configuration
-    * `{self.config.bot_prefix}{self.config.commands["reset-param"].command}` - Reset your LLM parameter to default value
+    * `{self.config.bot_prefix}{self.config.commands["get-param"].command} [param (optional)]` - show your LLM parameters/configuration
+    * `{self.config.bot_prefix}{self.config.commands["set-param"].command} [param] [new value]` - set your LLM parameters/configuration
+    * `{self.config.bot_prefix}{self.config.commands["reset-param"].command} [param]` - Reset your LLM parameter to default value
 
 When chatting directly with the bot, the messages are automatically passed as argument for `{self.config.bot_prefix}{self.config.commands["inference"].command}` command, if they don't match any other command.
 ## Additional help subjects:
