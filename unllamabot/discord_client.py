@@ -59,7 +59,7 @@ class SteelLlamaDiscordClient(discord.Client):
 
     async def on_ready(self) -> None:
         if not self.backend.is_alive():
-            raise RuntimeError("Backend is not running or configured IP is invalid!")
+            raise RuntimeError("Backend is not running, or configured IP is invalid!")
         await self.update_bot_presence()
 
     async def process_inference_command(self, message: discord.Message, prompt: str | None) -> None:
@@ -100,7 +100,6 @@ class SteelLlamaDiscordClient(discord.Client):
 
             if chunk.end_of_response:
                 reply_message = await reply_message.edit(content=chunk.message)
-                last_update_time = current_time_ms()
                 full_response = chunk.response
 
         self.db.add_message(user_id, ChatRole.BOT, full_response)

@@ -94,7 +94,7 @@ class LlamaBackend:
 
             if next_message is None:
                 yield LlamaResponseChunk(
-                    message=message,
+                    message=current_message,
                     chunk=chunk.content,
                     response=response,
                     end_of_message=False,
