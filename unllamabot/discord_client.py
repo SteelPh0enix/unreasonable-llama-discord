@@ -90,11 +90,10 @@ class SteelLlamaDiscordClient(discord.Client):
         logging.debug(f"LLM prompt: {llm_prompt}")
 
         async for chunk in self.backend.get_buffered_llm_response(llm_prompt, self.config.message_length_limit):
-            logging.debug(f"Received response chunk: {chunk}")
             if chunk.new_message:
                 reply_message = await reply_message.reply(content=chunk.message)
             else:
-                if current_time_ms() - last_update_time >= self.config.message_edit_cooldown:
+                if chunk.end_of_message or current_time_ms() - last_update_time >= self.config.message_edit_cooldown:
                     reply_message = await reply_message.edit(content=chunk.message)
                     last_update_time = current_time_ms()
 
@@ -102,6 +101,7 @@ class SteelLlamaDiscordClient(discord.Client):
                 reply_message = await reply_message.edit(content=chunk.message)
                 full_response = chunk.response
 
+        logging.debug(f"LLM response: {full_response}")
         self.db.add_message(user_id, ChatRole.BOT, full_response)
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
