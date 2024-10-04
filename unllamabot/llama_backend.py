@@ -23,29 +23,40 @@ class LlamaResponseChunk:
     """If True, previous message has reached maximum length and current response chunk contains new message. False in first chunk."""
 
 
-def find_last_occurence_of_character(string: str, characters: str) -> int | None:
-    for character in characters:
-        found_char_index = string.rfind(character)
+def find_last_occurence(input: str, strings: list[str]) -> tuple[int, str] | None:
+    for s in strings:
+        found_char_index = input.rfind(s)
         if found_char_index > 0:
-            return found_char_index
+            return found_char_index, s
     return None
 
 
 def split_message(message: str, threshold: int) -> tuple[str, str | None]:
-    """Splits the message into two at threshold, preserving code blocks.
-    Tries to split it smart, on newline/word boundary."""
+    """Splits the message into two at a character threshold, preserving code blocks.
+    Tries to split it smart, on newline/word/sentence boundary."""
     if len(message) < threshold:
         return message, None
 
+    # do a cheap hard split first
     first_message = message[:threshold]
     second_message = message[threshold:]
-    if split_position := find_last_occurence_of_character(first_message, "\n "):
-        second_message = first_message[split_position + 1 :] + second_message
-        first_message = first_message[:split_position]
+
+    # now, we need to check if split can be done better.
+    # we want to avoid splitting words, and preferably - sentences.
+    # to do that, we look for the last substring that follows the thing in the
+    # first message, and split at this boundary instead, by moving the context
+    # to the second message.
+    # the priority is following: paragraph ('\n'), sentence ('.'), word (' ').
+    if occurence := find_last_occurence(first_message, ["\n", ". ", " "]):
+        split_position, separator = occurence
+        # copy the context from first message, post-split, to second message
+        second_message = first_message[split_position + len(separator) :] + second_message
+        # shorten the first message, preserving the visible part of separator
+        first_message = first_message[
+            : split_position if separator.isspace() else split_position + len(separator.rstrip())
+        ]
 
     # check for unclosed code blocks
-    # if the number of markers is odd, there's most likely an unclosed code
-    # block there
     starting_marker = "```"
     ending_marker = "```"
     if first_message.count(ending_marker) % 2 != 0:
