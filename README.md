@@ -38,15 +38,15 @@ Use `$llm-help` command to bot's help.
 - Bot database
     - 🟧 Storing user configuration
         - 🟩 Storing/fetching custom prompts
-        - 🟥 Storing/fetching custom generation settings
+        - 🟧 Storing/fetching custom generation settings
     - 🟩 Storing/fetching user conversations
 
 - Discord client
     - 🟩 Handling requests for LLM inference
         - 🟩 Chained responses (first message responds to user, split responds to previous message)
-    - 🟥 Handling user configuration requests
-        - 🟥 Printing current user configuration
-        - 🟥 Setting user configuration
+    - 🟧 Handling user configuration requests
+        - 🟧Printing current user configuration
+        - 🟧 Setting user configuration
     - 🟧 Printing help
         - 🟩 Printing bot's help
         - 🟥 Printing LLM parameters help
@@ -57,7 +57,7 @@ Use `$llm-help` command to bot's help.
     - 🟩 Performing streamed LLM inference with user arguments
         - 🟩 Message splitting for user-defined length
             - 🟩 Fixing the code blocks between splits
-        - 🟥 Handling user configuration options for inference
+        - 🟧 Handling user configuration options for inference
 
 ## Deployment
 
