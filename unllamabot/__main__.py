@@ -8,6 +8,7 @@ from pathlib import Path
 
 from bot_config import create_default_bot_configuration, load_bot_configuration
 from discord_client import SteelLlamaDiscordClient
+from bot_core import UnreasonableLlamaBot
 
 
 def parse_script_arguments() -> argparse.Namespace:
@@ -61,7 +62,8 @@ def main(args: argparse.Namespace) -> None:
         )
         sys.exit(3)
 
-    client = SteelLlamaDiscordClient(bot_config)
+    bot = UnreasonableLlamaBot(bot_config)
+    client = SteelLlamaDiscordClient(bot)
     client.run(api_key)
 
 
