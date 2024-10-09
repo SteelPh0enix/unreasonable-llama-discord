@@ -27,7 +27,7 @@ def requires_admin_permission(func: Callable) -> Callable:  # type: ignore
     return wrapper
 
 
-class SteelLlamaDiscordClient(discord.Client):
+class UnreasonableLlamaDiscordClient(discord.Client):
     def __init__(self, bot: UnreasonableLlamaBot) -> None:
         self.bot = bot
         intents = discord.Intents.default()
