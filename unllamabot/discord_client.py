@@ -11,16 +11,21 @@ import discord
 from bot_config import BotConfig
 from bot_core import UnreasonableLlamaBot
 from llama_backend import split_message
+from unllamabot.bot_config import BotConfig
 
 
 def current_time_ms() -> int:
     return round(time.time() * 1000)
 
 
+def user_is_admin(user: discord.User | discord.Member, config: BotConfig) -> bool:
+    return user.id in config.admins_id
+
+
 def requires_admin_permission(func: Callable) -> Callable:  # type: ignore
     async def wrapper(self, message: discord.Message, *args, **kwargs):  # type: ignore
-        if message.author.id not in self.bot.config.admins_id:
-            await message.reply("You do not have permission to use this command.")
+        if user_is_admin(message.author, self.config):
+            await self.bot_reply(message, "You do not have permission to use this command.")
             return
         else:
             await func(self, message, *args, **kwargs)
@@ -34,6 +39,19 @@ class UnreasonableLlamaDiscordClient(discord.Client):
         intents = discord.Intents.default()
         intents.message_content = True
         super().__init__(intents=intents)
+
+    async def bot_reply(self, message_to_reply_to: discord.Message, reply_content: str) -> discord.Message:
+        """Replies to a message and adds bot-related stuff, like emojis, to reply"""
+        reply = await message_to_reply_to.reply(content=reply_content)
+        await reply.add_reaction(self.bot.config.message_removal_reaction)
+        return reply
+
+    async def chained_reply(self, message_to_reply_to: discord.Message, reply_content: str) -> None:
+        """Use this method to reply with more than `self.bot.config.message_length_limit` characters"""
+        first, second = split_message(reply_content, self.bot.config.message_length_limit)
+        message_to_reply_to = await self.bot_reply(message_to_reply_to, first)
+        if second is not None:
+            await self.chained_reply(message_to_reply_to, second)
 
     async def update_bot_presence(self) -> None:
         model_props = self.bot.backend.model_props()
@@ -58,19 +76,20 @@ class UnreasonableLlamaDiscordClient(discord.Client):
         if prompt is None:
             prefixed_inference_command = f"{self.bot.config.bot_prefix}{self.bot.config.commands['inference']}"
             prefixed_help_command = f"{self.bot.config.bot_prefix}{self.bot.config.commands['help']}"
-            await message.reply(
+            await self.bot_reply(
+                message,
                 f"*Usage: `{prefixed_inference_command} [message]`, for example `{prefixed_inference_command} what's the highest mountain on earth?`*\n"
-                f"*Use `{prefixed_help_command}` for details about the bot commands.*"
+                f"*Use `{prefixed_help_command}` for details about the bot commands.*",
             )
             return
 
         # This will be a placeholder, LLM windup can take a while.
-        reply_message = await message.reply("*Generating response, please wait...*")
+        reply_message = await self.bot_reply(message, "*Generating response, please wait...*")
         last_update_time = current_time_ms()
 
         async for chunk in self.bot.process_message(prompt, message.author.id):
             if chunk.new_message:
-                reply_message = await reply_message.reply(content=chunk.message)
+                reply_message = await self.bot_reply(reply_message, chunk.message)
             else:
                 if (
                     chunk.end_of_message
@@ -81,13 +100,6 @@ class UnreasonableLlamaDiscordClient(discord.Client):
 
             if chunk.end_of_response:
                 reply_message = await reply_message.edit(content=chunk.message)
-
-    async def chained_reply(self, message_to_reply_to: discord.Message, reply_content: str) -> None:
-        """Use this method to reply with more than `self.bot.config.message_length_limit` characters"""
-        first, second = split_message(reply_content, self.bot.config.message_length_limit)
-        message_to_reply_to = await message_to_reply_to.reply(content=first)
-        if second is not None:
-            await self.chained_reply(message_to_reply_to, second)
 
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
         help_content = f"*No help available for selected subject. Try {self.bot.config.bot_prefix}{self.bot.config.commands['help']} for list of subjects and generic help.*"
@@ -132,8 +144,11 @@ When chatting directly with the bot, the messages are automatically passed as ar
 **Mirostat learning rate (Eta)**: {model_info.mirostat_eta:.02f}
 **Mirostat target entropy (Tau)**: {model_info.mirostat_tau:.02f}"""
             case "admin":
-                help_content = f"""# Admin commands
+                if user_is_admin(message.author, self.bot.config):
+                    help_content = f"""# Admin commands
 * `{self.bot.config.bot_prefix}{self.bot.config.commands["refresh"].command}` - refresh llama.cpp props"""
+                else:
+                    help_content = "You lack permissions to check for this subject."
             case "params":
                 help_content = f"""# Configurable LLM parameters
 * `system-prompt`: System prompt for the LLM. Defines the behaviour of LLM and the character of it's responses.
@@ -150,7 +165,7 @@ You can use `{self.bot.config.bot_prefix}{self.bot.config.commands["reset-param"
 
     async def process_reset_conversation_command(self, message: discord.Message) -> None:
         self.bot.db.clear_user_messages(message.author.id)
-        await message.reply("Message history cleared!")
+        await self.bot_reply(message, "Message history cleared!")
 
     async def process_stats_command(self, message: discord.Message) -> None:
         stats = self.bot.get_user_stats(message.author.id)
@@ -164,7 +179,7 @@ Current prompt length (characters): {stats.chat_length_chars}""",
     @requires_admin_permission
     async def process_refresh_command(self, message: discord.Message) -> None:
         await self.update_bot_presence()
-        await message.reply("Bot's metadata refreshed!")
+        await self.bot_reply(message, "Bot's metadata refreshed!")
 
     async def process_get_param(self, message: discord.Message, param: str | None = None) -> None:
         user = self.bot.db.get_or_create_user(message.author.id)
@@ -181,13 +196,13 @@ Current prompt length (characters): {stats.chat_length_chars}""",
 
     async def process_set_param(self, message: discord.Message, params: str | None) -> None:
         if params is None:
-            await message.reply(content="Missing parameter name and new value!")
+            await self.bot_reply(message, "Missing parameter name and new value!")
             return
 
         try:
             param_name, new_param_value = params.split(sep=" ", maxsplit=1)
         except ValueError:
-            await message.reply(content="Missing value of the parameter!")
+            await self.bot_reply(message, "Missing value of the parameter!")
             return
 
         user = self.bot.db.get_or_create_user(message.author.id)
@@ -199,18 +214,18 @@ Current prompt length (characters): {stats.chat_length_chars}""",
                     f"Updated system prompt!\nOld: ```\n{user.system_prompt}\n```\nNew: ```\n{new_param_value}```",
                 )
             case _:
-                await message.reply(content=f"Unknown parameter: {param_name}")
+                await self.bot_reply(message, f"Unknown parameter: {param_name}")
 
     async def process_reset_param(self, message: discord.Message, param: str | None) -> None:
         if param is None:
-            await message.reply(content="Missing parameter name!")
+            await self.bot_reply(message, "Missing parameter name!")
             return
 
         match param:
             case "system-prompt":
                 await self.process_set_param(message, f"system-prompt {self.bot.config.default_system_prompt}")
             case _:
-                await message.reply(content=f"Unknown parameter: {param}")
+                await self.bot_reply(message, f"Unknown parameter: {param}")
 
     async def on_message(self, message: discord.Message) -> None:
         # ignore your own messages
@@ -251,7 +266,7 @@ Current prompt length (characters): {stats.chat_length_chars}""",
             if msg_is_dm:
                 await self.process_inference_command(message, arguments)
             else:
-                await message.reply(f"Unknown command: {command_name}")
+                await self.bot_reply(message, f"Unknown command: {command_name}")
 
     def should_reaction_be_handled(
         self,
@@ -271,7 +286,7 @@ Current prompt length (characters): {stats.chat_length_chars}""",
             message_channel = await self.fetch_channel(event.channel_id)
             if isinstance(
                 message_channel,
-                discord.TextChannel | discord.Thread,
+                discord.TextChannel | discord.DMChannel | discord.GroupChannel | discord.Thread,
             ):
                 message_to_delete = await message_channel.fetch_message(event.message_id)
                 logging.info(f"Removing message {message_to_delete.id}")
