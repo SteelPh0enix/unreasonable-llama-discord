@@ -264,7 +264,7 @@ Current prompt length (characters): {stats.chat_length_chars}""",
             await self.process_reset_param(message, arguments)
         else:
             if msg_is_dm:
-                await self.process_inference_command(message, arguments)
+                await self.process_inference_command(message, message.content)
             else:
                 await self.bot_reply(message, f"Unknown command: {command_name}")
 
