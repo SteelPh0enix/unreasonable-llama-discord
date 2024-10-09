@@ -10,6 +10,7 @@ from typing import Callable
 import discord
 from bot_config import BotConfig
 from bot_core import UnreasonableLlamaBot
+from llama_backend import split_message
 
 
 def current_time_ms() -> int:
@@ -81,8 +82,16 @@ class UnreasonableLlamaDiscordClient(discord.Client):
             if chunk.end_of_response:
                 reply_message = await reply_message.edit(content=chunk.message)
 
+    async def chained_reply(self, message_to_reply_to: discord.Message, reply_content: str) -> None:
+        """Use this method to reply with more than `self.bot.config.message_length_limit` characters"""
+        first, second = split_message(reply_content, self.bot.config.message_length_limit)
+        message_to_reply_to = await message_to_reply_to.reply(content=first)
+        if second is not None:
+            await self.chained_reply(message_to_reply_to, second)
+
     async def process_help_command(self, message: discord.Message, subject: str | None = None) -> None:
         help_content = f"*No help available for selected subject. Try {self.bot.config.bot_prefix}{self.bot.config.commands['help']} for list of subjects and generic help.*"
+
         match subject:
             case None:
                 help_content = f"""# This is [UnreasonableLlama](https://pypi.org/project/unreasonable-llama/)-based Discord bot.
@@ -96,6 +105,7 @@ The bot remembers your conversations and allows you to configure the LLM in some
     * `{self.bot.config.bot_prefix}{self.bot.config.commands["reset-conversation"].command}` - clear your conversation history and start a new one
     * `{self.bot.config.bot_prefix}{self.bot.config.commands["stats"].command}` - show some stats of your conversation
     * `{self.bot.config.bot_prefix}{self.bot.config.commands["get-param"].command} [param (optional)]` - show your LLM parameters/configuration
+
     * `{self.bot.config.bot_prefix}{self.bot.config.commands["set-param"].command} [param] [new value]` - set your LLM parameters/configuration
     * `{self.bot.config.bot_prefix}{self.bot.config.commands["reset-param"].command} [param]` - Reset your LLM parameter to default value
 
@@ -136,7 +146,7 @@ The change is immediate, resetting the conversation is not required.
 You can use `{self.bot.config.bot_prefix}{self.bot.config.commands["reset-param"].command}` to reset the parameter it's default value.
 """
 
-        await message.reply(content=help_content)
+        await self.chained_reply(message, help_content)
 
     async def process_reset_conversation_command(self, message: discord.Message) -> None:
         self.bot.db.clear_user_messages(message.author.id)
@@ -144,10 +154,11 @@ You can use `{self.bot.config.bot_prefix}{self.bot.config.commands["reset-param"
 
     async def process_stats_command(self, message: discord.Message) -> None:
         stats = self.bot.get_user_stats(message.author.id)
-        await message.reply(
+        await self.chained_reply(
+            message,
             f"""Messages in chat history (including system prompt): {stats.messages_in_chat_history}
 Current prompt length (tokens): {stats.chat_length_tokens}/{stats.context_length} ({stats.context_percent_used:.2f}% of available context used)
-Current prompt length (characters): {stats.chat_length_chars}"""
+Current prompt length (characters): {stats.chat_length_chars}""",
         )
 
     @requires_admin_permission
@@ -166,7 +177,7 @@ Current prompt length (characters): {stats.chat_length_chars}"""
             case _:
                 response_content = f"Unknown parameter: {param}"
 
-        await message.reply(content=response_content)
+        await self.chained_reply(message, response_content)
 
     async def process_set_param(self, message: discord.Message, params: str | None) -> None:
         if params is None:
@@ -183,8 +194,9 @@ Current prompt length (characters): {stats.chat_length_chars}"""
         match param_name:
             case "system-prompt":
                 self.bot.db.change_user_system_prompt(user.id, new_param_value)
-                await message.reply(
-                    content=f"Updated system prompt!\nOld: `{user.system_prompt}`\nNew: `{new_param_value}`"
+                await self.chained_reply(
+                    message,
+                    f"Updated system prompt!\nOld: ```\n{user.system_prompt}\n```\nNew: ```\n{new_param_value}```",
                 )
             case _:
                 await message.reply(content=f"Unknown parameter: {param_name}")
