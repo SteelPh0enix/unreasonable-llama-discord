@@ -11,7 +11,6 @@ import discord
 from bot_config import BotConfig
 from bot_core import UnreasonableLlamaBot
 from llama_backend import split_message
-from unllamabot.bot_config import BotConfig
 
 
 def current_time_ms() -> int:
