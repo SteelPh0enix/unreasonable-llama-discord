@@ -17,6 +17,15 @@ class DatabaseNotOpen(Exception):
     pass
 
 
+class ParameterSetError(Exception):
+    def __init__(self, description: str, *args: object) -> None:
+        self.description = description
+        super().__init__(*args)
+
+    def __str__(self) -> str:
+        return self.description
+
+
 class UserDoesNotExist(Exception):
     def __init__(self, user_id: int, *args: object) -> None:
         self.user_id = user_id
@@ -33,6 +42,26 @@ class CouldNotCreateUser(Exception):
 class User:
     id: int
     system_prompt: str
+    temperature: float | None
+    dynatemp_range: float | None
+    dynatemp_exponent: float | None
+    top_k: int | None
+    top_p: float | None
+    min_p: float | None
+    n_predict: int | None
+    n_keep: int | None
+    tfs_z: float | None
+    typical_p: float | None
+    repeat_penalty: float | None
+    repeat_last_n: int | None
+    penalize_nl: bool | None
+    presence_penalty: float | None
+    frequency_penalty: float | None
+    mirostat: int | None
+    mirostat_tau: float | None
+    mirostat_eta: float | None
+    seed: int | None
+    samplers: list[str] | None
 
 
 class ChatRole(StrEnum):
@@ -107,10 +136,80 @@ class BotDatabase:
 
     @_requires_open_db
     def get_user(self, user_id: int) -> User | None:
-        """Returns user or None if it doesn't exist."""
-        query = self.db.execute("SELECT system_prompt FROM users WHERE id == ?", (user_id,))
-        if system_prompt := query.fetchone():
-            return User(user_id, system_prompt[0])
+        query = self.db.execute(
+            """SELECT
+            system_prompt,
+            temperature,
+            dynatemp_range,
+            dynatemp_exponent,
+            top_k,
+            top_p,
+            min_p,
+            n_predict,
+            n_keep,
+            tfs_z,
+            typical_p,
+            repeat_penalty,
+            repeat_last_n,
+            penalize_nl,
+            presence_penalty,
+            frequency_penalty,
+            mirostat,
+            mirostat_tau,
+            mirostat_eta,
+            seed,
+            samplers
+            FROM users WHERE id == ?""",
+            (user_id,),
+        )
+        if query_result := query.fetchone():
+            (
+                system_prompt,
+                temperature,
+                dynatemp_range,
+                dynatemp_exponent,
+                top_k,
+                top_p,
+                min_p,
+                n_predict,
+                n_keep,
+                tfs_z,
+                typical_p,
+                repeat_penalty,
+                repeat_last_n,
+                penalize_nl,
+                presence_penalty,
+                frequency_penalty,
+                mirostat,
+                mirostat_tau,
+                mirostat_eta,
+                seed,
+                samplers,
+            ) = query_result
+            return User(
+                user_id,
+                system_prompt,
+                temperature,
+                dynatemp_range,
+                dynatemp_exponent,
+                top_k,
+                top_p,
+                min_p,
+                n_predict,
+                n_keep,
+                tfs_z,
+                typical_p,
+                repeat_penalty,
+                repeat_last_n,
+                penalize_nl == 1,
+                presence_penalty,
+                frequency_penalty,
+                mirostat,
+                mirostat_tau,
+                mirostat_eta,
+                seed,
+                samplers,
+            )
         return None
 
     @_requires_open_db
@@ -176,6 +275,87 @@ class BotDatabase:
                 "UPDATE messages SET message = ? WHERE user_id == ? AND role == ?",
                 (new_system_prompt, user_id, str(ChatRole.SYSTEM)),
             )
+
+    def _set_user_gen_param(
+        self, user_id: int, parameter_name: str, parameter_raw_value: str, parameter_type: type
+    ) -> tuple[str, str]:
+        """Helper function to set a user generation parameter."""
+        query = self.db.execute(f"SELECT {parameter_name} FROM users WHERE id == ?", (user_id,))
+        old_raw_value: str = query.fetchone()[0]
+
+        try:
+            new_param_value = parameter_type(parameter_raw_value)
+            # fallback to `int`, because sqlite doesn't have `bool` type
+            if parameter_type is bool:
+                new_param_value = int(new_param_value)
+
+            with self.db as db:
+                db.execute(f"UPDATE users SET {parameter_name} = ? WHERE id == ?", (new_param_value, user_id))
+        except ValueError:
+            raise ParameterSetError(f"Invalid {parameter_name}: {parameter_raw_value}")
+
+        query = self.db.execute(f"SELECT {parameter_name} FROM users WHERE id == ?", (user_id,))
+        new_raw_value: str = query.fetchone()[0]
+
+        return old_raw_value, new_raw_value
+
+    @_requires_open_db
+    def set_user_generation_parameter(
+        self, user_id: int, parameter_name: str, parameter_raw_value: str, create_user_if_not_found: bool = True
+    ) -> tuple[str, str]:
+        """Parses and sets a parameter value.
+        If parameter is set correctly, returns tuple containing it's `(old, new)` values as human-readable strings.
+        If arguments are invalid, raises `ParameterSetError`.
+        If user does not exists and `create_user_if_not_found` is `False`, raises `UserDoesNotExist`."""
+        if not self.user_exists(user_id):
+            if create_user_if_not_found:
+                self.add_user(user_id)
+            else:
+                raise UserDoesNotExist(user_id)
+
+        match parameter_name:
+            case "temperature":
+                return self._set_user_gen_param(user_id, "temperature", parameter_raw_value, float)
+            case "dynatemp_range":
+                return self._set_user_gen_param(user_id, "dynatemp_range", parameter_raw_value, float)
+            case "dynatemp_exponent":
+                return self._set_user_gen_param(user_id, "dynatemp_exponent", parameter_raw_value, float)
+            case "top_k":
+                return self._set_user_gen_param(user_id, "top_k", parameter_raw_value, int)
+            case "top_p":
+                return self._set_user_gen_param(user_id, "top_p", parameter_raw_value, float)
+            case "min_p":
+                return self._set_user_gen_param(user_id, "min_p", parameter_raw_value, float)
+            case "n_predict":
+                return self._set_user_gen_param(user_id, "n_predict", parameter_raw_value, int)
+            case "n_keep":
+                return self._set_user_gen_param(user_id, "n_keep", parameter_raw_value, int)
+            case "tfs_z":
+                return self._set_user_gen_param(user_id, "tfs_z", parameter_raw_value, float)
+            case "typical_p":
+                return self._set_user_gen_param(user_id, "typical_p", parameter_raw_value, float)
+            case "repeat_penalty":
+                return self._set_user_gen_param(user_id, "repeat_penalty", parameter_raw_value, float)
+            case "repeat_last_n":
+                return self._set_user_gen_param(user_id, "repeat_last_n", parameter_raw_value, int)
+            case "penalize_nl":
+                return self._set_user_gen_param(user_id, "penalize_nl", parameter_raw_value, bool)
+            case "presence_penalty":
+                return self._set_user_gen_param(user_id, "presence_penalty", parameter_raw_value, float)
+            case "frequency_penalty":
+                return self._set_user_gen_param(user_id, "frequency_penalty", parameter_raw_value, float)
+            case "mirostat":
+                return self._set_user_gen_param(user_id, "mirostat", parameter_raw_value, int)
+            case "mirostat_tau":
+                return self._set_user_gen_param(user_id, "mirostat_tau", parameter_raw_value, float)
+            case "mirostat_eta":
+                return self._set_user_gen_param(user_id, "mirostat_eta", parameter_raw_value, float)
+            case "seed":
+                return self._set_user_gen_param(user_id, "seed", parameter_raw_value, int)
+            case "samplers":
+                raise ParameterSetError("Samplers order configuration is currently WIP")
+            case _:
+                raise ParameterSetError(f"Unknown parameter: {parameter_name}")
 
     @_requires_open_db
     def user_has_messages(self, user_id: int) -> bool:
@@ -263,7 +443,7 @@ class BotDatabase:
     @_requires_open_db
     def delete_message(self, message: Message) -> None:
         # message position must be updated when a message is deleted
-        messages_to_update = self._get_user_messages_ids_and_position_end_slice(message.user_id, message.position)
+        messages_to_update = self._get_user_messages_ids_and_position_from(message.user_id, message.position)
         update_data = [{"message_id": id, "new_position": position - 1} for id, position in messages_to_update]
 
         with self.db as db:
@@ -302,7 +482,27 @@ class BotDatabase:
             db.execute(
                 """CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY,
-                    system_prompt TEXT NOT NULL)"""
+                    system_prompt TEXT NOT NULL,
+                    temperature REAL,
+                    dynatemp_range REAL,
+                    dynatemp_exponent REAL,
+                    top_k INTEGER,
+                    top_p REAL,
+                    min_p REAL,
+                    n_predict INTEGER,
+                    n_keep INTEGER,
+                    tfs_z REAL,
+                    typical_p REAL,
+                    repeat_penalty REAL,
+                    repeat_last_n INTEGER,
+                    penalize_nl INTEGER,
+                    presence_penalty REAL,
+                    frequency_penalty REAL,
+                    mirostat INTEGER,
+                    mirostat_tau REAL,
+                    mirostat_eta REAL,
+                    seed INTEGER,
+                    samplers TEXT)"""
             )
 
             db.execute(
@@ -327,7 +527,7 @@ class BotDatabase:
         return 0
 
     @_requires_open_db
-    def _get_user_messages_ids_and_position_end_slice(self, user_id: int, from_position: int) -> list[tuple[int, int]]:
+    def _get_user_messages_ids_and_position_from(self, user_id: int, from_position: int) -> list[tuple[int, int]]:
         query = self.db.execute(
             "SELECT id, position FROM messages WHERE user_id == ? AND position > ? ORDER BY position ASC",
             (user_id, from_position),

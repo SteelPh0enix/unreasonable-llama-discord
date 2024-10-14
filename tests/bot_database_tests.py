@@ -217,6 +217,65 @@ def test_changing_user_system_prompt() -> None:
     validate_users(db, expected_test_users_data, TEST_SYSTEM_PROMPT_DEFAULT)
 
 
+def validate_setting_user_parameter(
+    db: BotDatabase, user_id: int, parameter_name: str, parameter_raw_value: str, parameter_type: type
+) -> None:
+    db.set_user_generation_parameter(user_id, parameter_name, parameter_raw_value)
+    user = db.get_user(user_id)
+    assert getattr(user, parameter_name) == parameter_type(parameter_raw_value)
+
+
+def test_setting_valid_user_generation_parameters() -> None:
+    db = BotDatabase(TEST_DB_PATH, TEST_SYSTEM_PROMPT_DEFAULT)
+    user_id = 1
+    create_users(db, ((user_id, None),))
+
+    validate_setting_user_parameter(db, user_id, "temperature", "0.5678", float)
+    validate_setting_user_parameter(db, user_id, "dynatemp_range", "0.3456", float)
+    validate_setting_user_parameter(db, user_id, "dynatemp_exponent", "1.2345", float)
+    validate_setting_user_parameter(db, user_id, "top_k", "56", int)
+    validate_setting_user_parameter(db, user_id, "top_p", "0.7890", float)
+    validate_setting_user_parameter(db, user_id, "min_p", "0.4567", float)
+    validate_setting_user_parameter(db, user_id, "n_predict", "345", int)
+    validate_setting_user_parameter(db, user_id, "n_keep", "678", int)
+    validate_setting_user_parameter(db, user_id, "tfs_z", "1.2345", float)
+    validate_setting_user_parameter(db, user_id, "typical_p", "0.6789", float)
+    validate_setting_user_parameter(db, user_id, "repeat_penalty", "1.5678", float)
+    validate_setting_user_parameter(db, user_id, "repeat_last_n", "456", int)
+    validate_setting_user_parameter(db, user_id, "penalize_nl", "True", bool)
+    validate_setting_user_parameter(db, user_id, "penalize_nl", "False", bool)
+    validate_setting_user_parameter(db, user_id, "penalize_nl", "0", bool)
+    validate_setting_user_parameter(db, user_id, "penalize_nl", "1", bool)
+    validate_setting_user_parameter(db, user_id, "presence_penalty", "0.8901", float)
+    validate_setting_user_parameter(db, user_id, "frequency_penalty", "0.5678", float)
+    validate_setting_user_parameter(db, user_id, "mirostat", "1", int)
+    validate_setting_user_parameter(db, user_id, "mirostat_tau", "0.7890", float)
+    validate_setting_user_parameter(db, user_id, "mirostat_eta", "0.4567", float)
+    validate_setting_user_parameter(db, user_id, "seed", "123456789", int)
+
+    # verify that all changes have been made
+    user = db.get_user(user_id)
+    assert user.temperature == 0.5678
+    assert user.dynatemp_range == 0.3456
+    assert user.dynatemp_exponent == 1.2345
+    assert user.top_k == 56
+    assert user.top_p == 0.789
+    assert user.min_p == 0.4567
+    assert user.n_predict == 345
+    assert user.n_keep == 678
+    assert user.tfs_z == 1.2345
+    assert user.typical_p == 0.6789
+    assert user.repeat_penalty == 1.5678
+    assert user.repeat_last_n == 456
+    assert user.penalize_nl is True
+    assert user.presence_penalty == 0.8901
+    assert user.frequency_penalty == 0.5678
+    assert user.mirostat == 1
+    assert user.mirostat_tau == 0.789
+    assert user.mirostat_eta == 0.4567
+    assert user.seed == 123456789
+
+
 def test_deleting_users() -> None:
     db = BotDatabase(TEST_DB_PATH)
     test_users_data = (
