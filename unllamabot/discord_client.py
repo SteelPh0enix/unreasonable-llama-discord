@@ -132,7 +132,7 @@ When chatting directly with the bot, the messages are automatically passed as ar
 **Context length**: {model_info.n_ctx} tokens
 **Default system prompt**: `{self.bot.config.default_system_prompt}`
 **Samplers**: {model_info.samplers}
-## Parameters
+## Default LLM parameters
 **Top-K**: {model_info.top_k}
 **Tail-Free Sampling Z**: {model_info.tfs_z:.02f}
 **Typical-P**: {model_info.typical_p:.02f}
@@ -151,6 +151,32 @@ When chatting directly with the bot, the messages are automatically passed as ar
             case "params":
                 help_content = f"""# Configurable LLM parameters
 * `system-prompt`: System prompt for the LLM. Defines the behaviour of LLM and the character of it's responses.
+* `temperature`: Temperature controls the probability distribution of tokens selected by LLM. Lower temperature reduces randomness of tokens selected by LLM (tokens with high probability have higher change of being selected, and vice-versa), while higher temperature increases it by making the chance of selecting a token with high probability lower (and vice-versa). In other words, lower temperature implies more deterministic output, and higher temperature implies more diverse output. **Recommended range: (0, 2]**.
+* `dynatemp_range` (dynamic temperature range): llama.cpp implements [entropy-based dynamic temperature sampling](https://arxiv.org/pdf/2403.14541v1). This parameter, if non-zero, defines the range of temperature range used during token prediction as `[temperature - dynatemp_range, temperature + dynatemp_range]`, with lower range capped at 0.
+* `dynatemp_exponent`: (dynamic temperature exponent): This parameter is the exponent of normalized entropy used during dynamic temperature calculation. See paper linked in `dynatemp_range`, or `llama-sampling.cpp` file from `llama.cpp` repo for more details.
+* `top_k`: Top-K parameter limits the number of tokens considered by LLM during prediction step to specified value. Lower values will produce more deterministic and focused output, higher - more diverse and creative. More details can be found in [this paper](https://arxiv.org/pdf/1904.09751). **Recommended range: [10, 100]**
+* `top_p` (nucleus sampling): Top-P parameter adjusts the number of tokens based on their cumulative probability. High values of top-p will allow the LLM to use more tokens during generation - leading to more diverse text, while lower values will limit the amount of used tokens, leading to more focused output. **Recommended range: (0, 1)**
+* `min_p`: Min-P parameter defines the minimum probability of a token to be considered during prediction. More details can be found in [this paper](https://arxiv.org/pdf/2407.01082). **Recommended range: (0, 1)**
+* `n_predict`: Defines the amount of tokens to predict. Default value will allow the LLM to define the end of sentence.
+* `n_keep`: Defines the amount of tokens to retains from original prompt, when LLM runs out of context. -1 will force llama.cpp to retain all tokens from initial prompt.
+* `tfs_z` ([tail-free sampling](https://www.trentonbricken.com/Tail-Free-Sampling/)): TFS removes the tokens with less-than-desired *second derivative* of token's probability from token pool used during prediction. It's similar to top-p sampling, except top-p uses the probabilities themselves instead of derivatives. More details can be found in linked article. **Recommended range: (0, 1], where 1 == TFS disabled**
+* `typical_p` ([locally typical sampling](https://arxiv.org/pdf/2202.00666)): Locally typical sampling can increase diversity of the text without major coherence degradation by choosing tokens that are typical or expected based on the context. For more details, see linked paper. **Recommended values: (0, 1]**, where 1 == disabled.
+* `repeat_penalty`: Penalty for repeating the tokens in generated text. Higher values will penalize the repeated tokens more. **Recommended values: (0, 5)**
+* `repeat_last_n`: Amount of last tokens to penalize for repetition. Setting this to 0 disabled penalization, and -1 penalizes the whole context.
+* `penalize_ln`: Enable/disable penalization of newline tokens. Accepts values 1, 0, `true`, `false`, `yes` and `no` (case-insensitive).
+* `presence_penalty`: Penalty for re-using the tokens that are already present in generated text. Higher values lead to more creative text. **Recommended values: [0, 2)**, where 0 == presence penalty disabled
+* `frequency_penalty`: Penalty applied for re-using the tokens that are already present in generated text, based on the frequency of their appearance. Similar to presence penalty. **Recommended values: [0, 2)**, where 0 == frequency penalty disabled.
+* `mirostat` ([Mirostat sampling](https://arxiv.org/pdf/2007.14966)): Mirostat is an algorithm that actively maintains the quality of generated text within a desired range during text generation. It aims to strike a balance between coherence and diversity, avoiding low-quality output caused by excessive repetition (boredom traps) or incoherence (confusion traps) [(source)[https://github.com/ggerganov/llama.cpp/blob/master/examples/main/README.md#mirostat-sampling]]. **Valid values: 0 (disabled), 1 (Mirostat), 2 (Mirostat 2.0)**. **ENABLING MIROSTAT DISABLES OTHER SAMPLERS!!!**
+* `mirostat_tau`: Mirostat target entropy, desired perplexity for generated text. Lower values lead to more coherent and focused output, while higher will generate more creative one. **Recommended values: (0, 10)**
+* `mirostat_eta`: Mirostat learning rate. Influences how fast algorithm responds to feedback. **Recommended values: (0, 1)**
+* `seed`: 32-bit seed used for RNG.
+* `samplers`: List of samplers to use, in order of usage. List should contain names of samplers separated by commas, for example `top_k, tfs_z, typ_p, top_p, min_p, temperature`. Whitespace is ignorted. **Valid samplers:**
+    * `top_k`
+    * `tfs_z`
+    * `typ_p`
+    * `top_p`
+    * `min_p`
+    * `temperature`
 ## Checking and modifying LLM parameters
 All the parameters listed above are stored on per-user basis, therefore you are able to modify them to your liking.
 To check current value of the parameter, use `{self.bot.config.bot_prefix}{self.bot.config.commands["get-param"].command} [parameter-name]` command, for example, `{self.bot.config.bot_prefix}{self.bot.config.commands["get-param"].command} system-prompt`.
