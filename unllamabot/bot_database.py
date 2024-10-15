@@ -284,10 +284,16 @@ class BotDatabase:
         old_raw_value: str = query.fetchone()[0]
 
         try:
-            new_param_value = parameter_type(parameter_raw_value)
-            # fallback to `int`, because sqlite doesn't have `bool` type
+            # manual bool handling, because there's no bool type in sqlite
             if parameter_type is bool:
-                new_param_value = int(new_param_value)
+                if parameter_raw_value.lower() in ("1", "true", "t", "yes", "y"):
+                    new_param_value = True
+                elif parameter_raw_value.lower() in ("0", "false", "f", "no", "n"):
+                    new_param_value = False
+                else:
+                    raise ParameterSetError(f"Invalid {parameter_name}: {parameter_raw_value}")
+            else:
+                new_param_value = parameter_type(parameter_raw_value)
 
             with self.db as db:
                 db.execute(f"UPDATE users SET {parameter_name} = ? WHERE id == ?", (new_param_value, user_id))

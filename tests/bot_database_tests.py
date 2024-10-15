@@ -8,6 +8,7 @@ from unllamabot.bot_database import (
     ChatRole,
     DatabaseNotOpen,
     Message,
+    ParameterSetError,
     UserDoesNotExist,
 )
 
@@ -218,11 +219,19 @@ def test_changing_user_system_prompt() -> None:
 
 
 def validate_setting_user_parameter(
-    db: BotDatabase, user_id: int, parameter_name: str, parameter_raw_value: str, parameter_type: type
+    db: BotDatabase,
+    user_id: int,
+    parameter_name: str,
+    parameter_raw_value: str,
+    parameter_type: type,
 ) -> None:
     db.set_user_generation_parameter(user_id, parameter_name, parameter_raw_value)
     user = db.get_user(user_id)
-    assert getattr(user, parameter_name) == parameter_type(parameter_raw_value)
+    if parameter_type is bool:
+        parameter_value = parameter_raw_value.lower() in ("1", "true")
+    else:
+        parameter_value = parameter_type(parameter_raw_value)
+    assert getattr(user, parameter_name) == parameter_value
 
 
 def test_setting_valid_user_generation_parameters() -> None:
@@ -274,6 +283,48 @@ def test_setting_valid_user_generation_parameters() -> None:
     assert user.mirostat_tau == 0.789
     assert user.mirostat_eta == 0.4567
     assert user.seed == 123456789
+
+
+def validate_setting_invalid_user_parameter(
+    db: BotDatabase,
+    user_id: int,
+    parameter_name: str,
+    parameter_raw_value: str,
+    parameter_type: type,
+) -> None:
+    with pytest.raises(ParameterSetError, match=f"Invalid {parameter_name}: {parameter_raw_value}"):
+        db.set_user_generation_parameter(user_id, parameter_name, parameter_raw_value)
+
+
+def test_setting_invalid_user_generation_parameters() -> None:
+    db = BotDatabase(TEST_DB_PATH, TEST_SYSTEM_PROMPT_DEFAULT)
+    user_id = 1
+    create_users(db, ((user_id, None),))
+    original_user = db.get_user(user_id)
+
+    validate_setting_invalid_user_parameter(db, user_id, "temperature", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "dynatemp_range", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "dynatemp_exponent", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "top_k", "invalid", int)
+    validate_setting_invalid_user_parameter(db, user_id, "top_p", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "min_p", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "n_predict", "invalid", int)
+    validate_setting_invalid_user_parameter(db, user_id, "n_keep", "invalid", int)
+    validate_setting_invalid_user_parameter(db, user_id, "tfs_z", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "typical_p", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "repeat_penalty", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "repeat_last_n", "invalid", int)
+    validate_setting_invalid_user_parameter(db, user_id, "penalize_nl", "invalid", bool)
+    validate_setting_invalid_user_parameter(db, user_id, "presence_penalty", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "frequency_penalty", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "mirostat", "invalid", int)
+    validate_setting_invalid_user_parameter(db, user_id, "mirostat_tau", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "mirostat_eta", "invalid", float)
+    validate_setting_invalid_user_parameter(db, user_id, "seed", "invalid", int)
+
+    # nothing should change
+    post_setting_user = db.get_user(user_id)
+    assert original_user == post_setting_user
 
 
 def test_deleting_users() -> None:
