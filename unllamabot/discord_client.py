@@ -90,7 +90,7 @@ class UnreasonableLlamaDiscordClient(discord.Client):
             if chunk.new_message:
                 reply_message = await self.bot_reply(reply_message, chunk.message)
             else:
-                if (
+                if len(chunk.message.strip()) > 0 and (
                     chunk.end_of_message
                     or current_time_ms() - last_update_time >= self.bot.config.message_edit_cooldown
                 ):
@@ -157,6 +157,8 @@ When chatting directly with the bot, the messages are automatically passed as ar
 * `top_k`: Top-K parameter limits the number of tokens considered by LLM during prediction step to specified value. Lower values will produce more deterministic and focused output, higher - more diverse and creative. More details can be found in [this paper](https://arxiv.org/pdf/1904.09751). **Recommended range: [10, 100]**
 * `top_p` (nucleus sampling): Top-P parameter adjusts the number of tokens based on their cumulative probability. High values of top-p will allow the LLM to use more tokens during generation - leading to more diverse text, while lower values will limit the amount of used tokens, leading to more focused output. **Recommended range: (0, 1)**
 * `min_p`: Min-P parameter defines the minimum probability of a token to be considered during prediction. More details can be found in [this paper](https://arxiv.org/pdf/2407.01082). **Recommended range: (0, 1)**
+* `xtc_threshold` ([Exclude Top Choices](https://github.com/oobabooga/text-generation-webui/pull/6335)): "If there are multiple tokens with predicted probability at least `xtc_threshold`..."
+* `xtc_probability` ([Exclude Top Choices](https://github.com/oobabooga/text-generation-webui/pull/6335)): "...remove all except the least probable one from sampling, with probability `xtc_probabililty`"
 * `n_predict`: Defines the amount of tokens to predict. Default value will allow the LLM to define the end of sentence.
 * `n_keep`: Defines the amount of tokens to retains from original prompt, when LLM runs out of context. -1 will force llama.cpp to retain all tokens from initial prompt.
 * `tfs_z` ([tail-free sampling](https://www.trentonbricken.com/Tail-Free-Sampling/)): TFS removes the tokens with less-than-desired *second derivative* of token's probability from token pool used during prediction. It's similar to top-p sampling, except top-p uses the probabilities themselves instead of derivatives. More details can be found in linked article. **Recommended range: (0, 1], where 1 == TFS disabled**
