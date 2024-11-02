@@ -27,7 +27,8 @@ class UnreasonableLlamaBot:
         self.config = config
         self.db = BotDatabase(config.chat_database_path, config.default_system_prompt)
         self.backend = LlamaBackend(
-            config.llama_url if config.llama_url is not None else "",
+            config.llama_host,
+            config.llama_port,
             config.llama_request_timeout,
         )
         self.llm_utils = LLMUtils(self.backend)

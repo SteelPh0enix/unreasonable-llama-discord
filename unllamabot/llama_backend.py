@@ -2,9 +2,8 @@
 
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import cast
 
-from unreasonable_llama import LlamaCompletionRequest, LlamaProps, LlamaTokenizeRequest, UnreasonableLlama
+import unreasonable_llama as llama
 
 
 @dataclass
@@ -76,29 +75,35 @@ def split_message(message: str, threshold: int) -> tuple[str, str | None]:
 
 
 class LlamaBackend:
-    def __init__(self, server_url: str, request_timeout: int) -> None:
-        self.llama = UnreasonableLlama(server_url, request_timeout)
+    def __init__(self, server_host: str | None, server_port: int | None, request_timeout: int) -> None:
+        self.host = server_host
+        self.port = server_port
+        self.timeout = request_timeout
 
     def is_alive(self) -> bool:
-        return self.llama.is_alive()
+        return llama.health(server_host=self.host, server_port=self.port, timeout=self.timeout)
 
-    def model_props(self) -> LlamaProps:
-        return self.llama.props()
+    def model_props(self) -> llama.LlamaProps:
+        return llama.props(server_host=self.host, server_port=self.port, timeout=self.timeout)
 
     async def get_llm_response(
         self,
         prompt: str,
     ) -> AsyncIterator[str]:
-        request = LlamaCompletionRequest(prompt=prompt)
-        async for chunk in self.llama.get_streamed_completion(request):
+        request = llama.LlamaCompletionRequest(prompt=prompt)
+        async for chunk in llama.streamed_complete(
+            request, server_host=self.host, server_port=self.port, timeout=self.timeout
+        ):
             yield chunk.content
 
     async def get_buffered_llm_response(self, prompt: str, message_length: int) -> AsyncIterator[LlamaResponseChunk]:
-        request = LlamaCompletionRequest(prompt=prompt)
+        request = llama.LlamaCompletionRequest(prompt=prompt)
         message = ""
         response = ""
 
-        async for chunk in self.llama.get_streamed_completion(request):
+        async for chunk in llama.streamed_complete(
+            request, server_host=self.host, server_port=self.port, timeout=self.timeout
+        ):
             response += chunk.content
             message += chunk.content
             current_message, next_message = split_message(message, message_length)
@@ -132,5 +137,4 @@ class LlamaBackend:
                 message = next_message
 
     def tokenize(self, message: str) -> list[int]:
-        request = LlamaTokenizeRequest(message)
-        return cast(list[int], self.llama.tokenize(request))
+        return llama.tokenize(message, server_host=self.host, server_port=self.port, timeout=self.timeout)

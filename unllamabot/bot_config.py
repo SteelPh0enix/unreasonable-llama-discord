@@ -55,9 +55,10 @@ chat-database-path = "./chats.uldb"
 admins-id = []
 
 [llama]
-# URL is optional, if not provided it will be loaded from LLAMA_CPP_SERVER_URL env variable,
-# as it's UnreasonableLlama fallback behaviour.
-# url = "http://127.0.0.1:8080/"
+# host/port is optional, if not provided it will be loaded from LLAMA_ARG_HOST
+# and LLAMA_ARG_PORT env variables, as it's UnreasonableLlama fallback behaviour.
+# host = "localhost"
+# port = 8080
 server_timeout = 10000
 """
 
@@ -91,8 +92,10 @@ class BotConfig:
     """List of commands."""
     llama_request_timeout: int
     """Timeout for llama.cpp server requests, in milliseconds."""
-    llama_url: str | None
-    """llama.cpp server URL, if None the LLAMA_CPP_SERVER_URL env var will be used instead."""
+    llama_host: str | None
+    """llama.cpp server host, if None the LLAMA_ARG_HOST env var will be used instead."""
+    llama_port: int | None
+    """llama.cpp server port, if None the LLAMA_ARG_PORT env var will be used instead."""
     chat_database_path: str
     """Path to bot's chats and users database."""
 
@@ -110,7 +113,8 @@ class BotConfig:
         chat_database_path = config["bot"]["chat-database-path"]
         admin_ids = config["bot"]["admins-id"]
         llama_request_timeout = config["llama"]["server_timeout"]
-        llama_url = config["llama"].get("url")
+        llama_host = config["llama"].get("host")
+        llama_port = config["llama"].get("port")
 
         return BotConfig(
             message_edit_cooldown,
@@ -121,7 +125,8 @@ class BotConfig:
             admin_ids,
             commands,
             llama_request_timeout,
-            llama_url,
+            llama_host,
+            llama_port,
             chat_database_path,
         )
 

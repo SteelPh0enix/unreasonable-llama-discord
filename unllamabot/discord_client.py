@@ -134,7 +134,6 @@ When chatting directly with the bot, the messages are automatically passed as ar
 **Samplers**: {model_info.samplers}
 ## Default LLM parameters
 **Top-K**: {model_info.top_k}
-**Tail-Free Sampling Z**: {model_info.tfs_z:.02f}
 **Typical-P**: {model_info.typical_p:.02f}
 **Top-P**: {model_info.top_p:.02f}
 **Min-P**: {model_info.min_p:.02f}
@@ -149,7 +148,7 @@ When chatting directly with the bot, the messages are automatically passed as ar
                 else:
                     help_content = "You lack permissions to check for this subject."
             case "params":
-                help_content = f"""# Configurable LLM parameters
+                help_content = f"""# (incomplete) List of LLM parameters (configuration is NOT available yet!)
 * `system-prompt`: System prompt for the LLM. Defines the behaviour of LLM and the character of it's responses.
 * `temperature`: Temperature controls the probability distribution of tokens selected by LLM. Lower temperature reduces randomness of tokens selected by LLM (tokens with high probability have higher change of being selected, and vice-versa), while higher temperature increases it by making the chance of selecting a token with high probability lower (and vice-versa). In other words, lower temperature implies more deterministic output, and higher temperature implies more diverse output. **Recommended range: (0, 2]**.
 * `dynatemp_range` (dynamic temperature range): llama.cpp implements [entropy-based dynamic temperature sampling](https://arxiv.org/pdf/2403.14541v1). This parameter, if non-zero, defines the range of temperature range used during token prediction as `[temperature - dynatemp_range, temperature + dynatemp_range]`, with lower range capped at 0.
@@ -172,7 +171,7 @@ When chatting directly with the bot, the messages are automatically passed as ar
 * `mirostat_tau`: Mirostat target entropy, desired perplexity for generated text. Lower values lead to more coherent and focused output, while higher will generate more creative one. **Recommended values: (0, 10)**
 * `mirostat_eta`: Mirostat learning rate. Influences how fast algorithm responds to feedback. **Recommended values: (0, 1)**
 * `seed`: 32-bit seed used for RNG.
-* `samplers`: List of samplers to use, in order of usage. List should contain names of samplers separated by commas, for example `top_k, tfs_z, typ_p, top_p, min_p, temperature`. Whitespace is ignorted. **Valid samplers:**
+* `samplers`: List of samplers to use, in order of usage. List should contain names of samplers separated by commas, for example `top_k, tfs_z, typ_p, top_p, min_p, temperature`. Whitespace is ignored. **Valid samplers:**
     * `top_k`
     * `tfs_z`
     * `typ_p`
